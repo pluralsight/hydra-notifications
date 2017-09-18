@@ -34,17 +34,9 @@ lazy val defaultSettings = Seq(
 lazy val root = Project(
   id = "hydra-notifications",
   base = file("."),
-  settings = defaultSettings
-).aggregate(http, services)
-
-lazy val http = Project(
-  id = "http",
-  base = file("http"),
   settings = defaultSettings ++ Seq(libraryDependencies ++= Dependencies.coreDeps)
-).dependsOn(services).settings(name := "hydra-notifications-http")
-
-lazy val services = Project(
-  id = "services",
-  base = file("services"),
-  settings = defaultSettings ++ Seq(libraryDependencies ++= Dependencies.serviceDeps)
-).settings(name := "hydra-notifications-services")
+    ++ Seq(
+    mainClass in Compile := Some("hydra.notifications.NotificationsService"),
+    javaOptions += "-Xmx2G"
+  )
+).enablePlugins(JavaAppPackaging)

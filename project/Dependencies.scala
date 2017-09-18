@@ -70,9 +70,8 @@ object Dependencies {
 
   val testDeps = Seq(scalaTest, scalaMock) ++ akkaTest
 
-  val coreDeps = Seq(scalaConfigs, typesafeConfig, serviceContainer, reflections) ++ akka ++ joda ++ logging ++ testDeps
-
-  val serviceDeps = coreDeps ++ Seq(slack, guavacache) ++ opsGenie
+  val coreDeps = Seq(scalaConfigs, slack, guavacache, typesafeConfig, serviceContainer,
+    reflections) ++ akka ++ joda ++ logging ++ testDeps ++ opsGenie
 
   val overrides = Set(logging, typesafeConfig, joda)
 }
