@@ -1,5 +1,10 @@
 # Hydra Notifications
 
+[![Build Status](https://travis-ci.org/pluralsight/hydra-notifications.svg?branch=master)](https://travis-ci.org/pluralsight/hydra-notifications)
+[![codecov](https://codecov.io/gh/pluralsight/hydra-notifications/branch/master/graph/badge.svg)](https://codecov.io/gh/pluralsight/hydra-notifications)
+[![Join the chat at https://gitter.im/pluralsight/hydra](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/pluralsight/hydra-notifications?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
+
 A generic HTTP container that sends events to underlying services.
 
 # Supported Services
@@ -7,11 +12,6 @@ A generic HTTP container that sends events to underlying services.
 Currently, two services are supported: Slack and OpsGenie.
 
 Others forthcoming.
-
-[![Build Status](https://travis-ci.org/pluralsight/hydra-notifications.svg?branch=master)](https://travis-ci.org/pluralsight/hydra-notifications)
-[![codecov](https://codecov.io/gh/pluralsight/hydra-notifications/branch/master/graph/badge.svg)](https://codecov.io/gh/pluralsight/hydra-notifications)
-[![Join the chat at https://gitter.im/pluralsight/hydra](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/pluralsight/hydra-notifications?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-
 
 ## Adding a new service
 
