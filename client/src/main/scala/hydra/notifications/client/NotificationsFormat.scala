@@ -25,6 +25,8 @@ object NotificationsFormat extends DefaultJsonProtocol with SprayJsonSupport {
 
   implicit val slackFormat = jsonFormat(SlackNotification,"channel","message")
 
+  implicit val notificationsResponseFormat = jsonFormat2(NotificationsResponse)
+
   implicit val notificationsFormat = new RootJsonFormat[HydraNotification] {
     def write(obj: HydraNotification): JsValue =
       JsObject((obj match {

@@ -20,3 +20,6 @@ case class OpsGenieNotification(message: String,
 
   override val service = "opsgenie"
 }
+
+
+case class NotificationsResponse(statusCode:Int, message: String)

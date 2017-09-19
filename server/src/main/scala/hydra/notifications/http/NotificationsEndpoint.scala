@@ -23,7 +23,7 @@ import akka.pattern.ask
 import akka.util.Timeout
 import com.github.vonnagy.service.container.http.routing.RoutedEndpoints
 import hydra.notifications._
-import hydra.notifications.client.HydraNotification
+import hydra.notifications.client.{HydraNotification, NotificationsResponse}
 import hydra.notifications.services.NotificationsSupervisor.{GetServiceList, SendNotification, ServiceList, ServiceNotFound}
 import spray.json.DefaultJsonProtocol
 
@@ -38,8 +38,6 @@ class NotificationsEndpoint(implicit val system: ActorSystem, implicit val actor
 
   private val notificationsActor = system.actorSelection("/user/service/notifications_supervisor").resolveOne()
 
-  implicit val notificationsResponseFormat = jsonFormat1(NotificationsResponse)
-
   override val route = onSuccess(notificationsActor) { actor =>
     post {
       entity(as[HydraNotification]) {
@@ -53,7 +51,7 @@ class NotificationsEndpoint(implicit val system: ActorSystem, implicit val actor
     onSuccess(supervisor ? GetServiceList) { msg =>
       msg match {
         case ServiceList(svcs) => complete(OK, svcs)
-        case r => complete(400, NotificationsResponse(r.toString))
+        case r => complete(400, NotificationsResponse(400, r.toString))
       }
     }
   }
@@ -61,14 +59,11 @@ class NotificationsEndpoint(implicit val system: ActorSystem, implicit val actor
   private def notify(supervisor: ActorRef, notification: HydraNotification): Route = {
     onSuccess(supervisor ? SendNotification(notification)) { msg =>
       msg match {
-        case NotificationSent(message) => complete(OK, NotificationsResponse(message))
-        case ServiceNotFound(s) => complete(NotFound, NotificationsResponse(s"Service $s not found."))
-        case NotificationSendError(code, error) => complete(code, NotificationsResponse(error))
+        case NotificationSent(message) => complete(OK, NotificationsResponse(200, message))
+        case ServiceNotFound(s) => complete(NotFound, NotificationsResponse(404, s"Service $s not found."))
+        case NotificationSendError(code, error) => complete(code, NotificationsResponse(code, error))
       }
     }
   }
-
-
 }
 
-case class NotificationsResponse(message: String)

@@ -57,6 +57,8 @@ object Dependencies {
       "com.sun.jersey.contribs" % "jersey-multipart" % jerseyVersion)
 
     val reflections = "org.reflections" % "reflections" % reflectionsVersion
+
+    val wireMock = "com.github.tomakehurst" % "wiremock-standalone" % "2.8.0" % "test"
   }
 
   object Test {
@@ -72,10 +74,12 @@ object Dependencies {
 
   val testDeps = Seq(scalaTest, scalaMock) ++ akkaTest
 
+  val testClientDeps = Seq(scalaTest, scalaMock, wireMock) ++ akkaTest
+
   val serverDeps = Seq(scalaConfigs, slack, guavacache, typesafeConfig, serviceContainer,
     reflections) ++ akka ++ joda ++ logging ++ testDeps ++ opsGenie
 
-  val clientDeps = akkaHttpClient ++ testDeps
+  val clientDeps = akkaHttpClient ++ testClientDeps
 
   val overrides = Set(logging, typesafeConfig, joda)
 }
