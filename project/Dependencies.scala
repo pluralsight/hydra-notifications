@@ -11,7 +11,7 @@ object Dependencies {
   val typesafeConfigVersion = "1.3.1"
   val jodaTimeVersion = "2.9.9"
   val jodaConvertVersion = "1.8.1"
-  val akkaHTTPVersion = "10.0.9"
+  val akkaHTTPVersion = "10.0.10"
   val scalaMockVersion = "3.5.0"
   val serviceContainerVersion = "2.0.6"
   val slackVersion = "0.2.1"
@@ -32,11 +32,10 @@ object Dependencies {
       "org.apache.logging.log4j" % "log4j-1.2-api" % log4jVersion)
 
     val akka = Seq("com.typesafe.akka" %% "akka-actor" % akkaVersion,
+      "com.typesafe.akka" %% "akka-stream" % akkaVersion,
       "com.typesafe.akka" %% "akka-slf4j" % akkaVersion,
       "com.typesafe.akka" %% "akka-http-spray-json" % akkaHTTPVersion,
       "ch.megard" %% "akka-http-cors" % "0.2.1")
-
-    val akkaHttpClient = Seq("com.typesafe.akka" %% "akka-http-spray-json" % akkaHTTPVersion)
 
     val guavacache = "com.github.cb372" %% "scalacache-guava" % scalaCacheVersion
 
@@ -79,7 +78,7 @@ object Dependencies {
   val serverDeps = Seq(scalaConfigs, slack, guavacache, typesafeConfig, serviceContainer,
     reflections) ++ akka ++ joda ++ logging ++ testDeps ++ opsGenie
 
-  val clientDeps = akkaHttpClient ++ testClientDeps
+  val clientDeps = akka ++ testClientDeps
 
   val overrides = Set(logging, typesafeConfig, joda)
 }
