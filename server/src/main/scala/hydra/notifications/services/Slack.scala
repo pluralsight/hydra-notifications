@@ -19,6 +19,7 @@ import akka.actor.{Actor, ActorLogging}
 import akka.pattern.pipe
 import com.typesafe.config.ConfigFactory
 import hydra.notifications._
+import hydra.notifications.client.SlackNotification
 import slack.api.SlackApiClient
 import slack.models.Channel
 
@@ -63,8 +64,4 @@ class Slack extends Actor with ActorLogging with HydraNotificationService {
 
 object SlackNotificationsActor {
   implicit val channelCache = ScalaCache(GuavaCache())
-}
-
-case class SlackNotification(channel: String, message: String) extends HydraNotification {
-  override val service = "slack"
 }

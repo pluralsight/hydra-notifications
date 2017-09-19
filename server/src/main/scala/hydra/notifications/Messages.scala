@@ -15,9 +15,7 @@
  */
 package hydra.notifications
 
-abstract class HydraNotification {
-  def service: String
-}
+import hydra.notifications.client.HydraNotification
 
 trait HydraNotificationMessage
 

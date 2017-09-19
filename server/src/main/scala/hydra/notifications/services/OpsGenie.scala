@@ -21,6 +21,7 @@ import com.ifountain.opsgenie.client.swagger.ApiException
 import com.ifountain.opsgenie.client.swagger.model.{CreateAlertRequest, Recipient, TeamRecipient}
 import com.typesafe.config.ConfigFactory
 import hydra.notifications._
+import hydra.notifications.client.OpsGenieNotification
 
 import scala.collection.JavaConverters._
 import scala.util.Try
@@ -64,15 +65,3 @@ class OpsGenie extends Actor with ActorLogging with HydraNotificationService {
 }
 
 
-case class OpsGenieNotification(message: String,
-                                alias: String,
-                                description: Option[String],
-                                note: Option[String],
-                                team: String,
-                                tags: Seq[String],
-                                entity: String,
-                                source: Option[String],
-                                user: String) extends HydraNotification {
-
-  override val service = "opsgenie"
-}

@@ -16,8 +16,9 @@
 package hydra.notifications.services
 
 import akka.actor.{Actor, ActorLogging, ActorRef, Props}
-import hydra.notifications.{HydraNotification, HydraNotificationMessage, Notify}
+import hydra.notifications.client.HydraNotification
 import hydra.notifications.services.NotificationsSupervisor._
+import hydra.notifications.{HydraNotificationMessage, Notify}
 
 class NotificationsSupervisor(services: Map[String, Props]) extends Actor with ActorLogging {
 

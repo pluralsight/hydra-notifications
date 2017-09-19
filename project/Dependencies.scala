@@ -36,6 +36,8 @@ object Dependencies {
       "com.typesafe.akka" %% "akka-http-spray-json" % akkaHTTPVersion,
       "ch.megard" %% "akka-http-cors" % "0.2.1")
 
+    val akkaHttpClient = Seq("com.typesafe.akka" %% "akka-http-spray-json" % akkaHTTPVersion)
+
     val guavacache = "com.github.cb372" %% "scalacache-guava" % scalaCacheVersion
 
     val joda = Seq("joda-time" % "joda-time" % jodaTimeVersion, "org.joda" % "joda-convert" % jodaConvertVersion)
@@ -70,8 +72,10 @@ object Dependencies {
 
   val testDeps = Seq(scalaTest, scalaMock) ++ akkaTest
 
-  val coreDeps = Seq(scalaConfigs, slack, guavacache, typesafeConfig, serviceContainer,
+  val serverDeps = Seq(scalaConfigs, slack, guavacache, typesafeConfig, serviceContainer,
     reflections) ++ akka ++ joda ++ logging ++ testDeps ++ opsGenie
+
+  val clientDeps = akkaHttpClient ++ testDeps
 
   val overrides = Set(logging, typesafeConfig, joda)
 }

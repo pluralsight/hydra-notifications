@@ -13,13 +13,10 @@
  *  limitations under the License.
  *
  */
-package hydra.notifications.http
+package hydra.notifications.client
 
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
-import hydra.notifications.HydraNotification
-import hydra.notifications.services.{OpsGenieNotification, SlackNotification}
-import spray.json.{DefaultJsonProtocol, JsObject, JsString, JsValue, RootJsonFormat, deserializationError}
-import spray.json._
+import spray.json.{DefaultJsonProtocol, JsObject, JsString, JsValue, RootJsonFormat, deserializationError, _}
 
 object NotificationsFormat extends DefaultJsonProtocol with SprayJsonSupport {
 

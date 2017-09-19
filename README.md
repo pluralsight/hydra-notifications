@@ -31,9 +31,9 @@ start up time.
 
 #### Create the service notification case class 
 
-Make sure it extends from `http.hydra.notifications.HydraNotification`
+Create the class in the client module and make sure it extends from `http.hydra.notifications.HydraNotification`
 
-Examples: SlackNotification and OpsGenieNotification
+Examples: SlackNotification and OpsGenieNotification in hydra.notifications.client
 
 
 #### Add the case class to the SprayJsonFormat 

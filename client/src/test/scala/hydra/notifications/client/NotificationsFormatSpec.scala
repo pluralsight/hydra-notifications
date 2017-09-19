@@ -13,15 +13,13 @@
  *  limitations under the License.
  *
  */
-package hydra.notifications.http
+package hydra.notifications.client
 
-import hydra.notifications.HydraNotification
-import hydra.notifications.services.{OpsGenieNotification, SlackNotification}
 import org.scalatest.{FunSpecLike, Matchers}
 
 class NotificationsFormatSpec extends Matchers with FunSpecLike {
 
-  import NotificationsFormat._
+  import hydra.notifications.client.NotificationsFormat._
   import spray.json._
 
   describe("The Notifications Spray Format") {

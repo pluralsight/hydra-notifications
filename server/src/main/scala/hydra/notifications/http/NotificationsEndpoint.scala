@@ -23,6 +23,7 @@ import akka.pattern.ask
 import akka.util.Timeout
 import com.github.vonnagy.service.container.http.routing.RoutedEndpoints
 import hydra.notifications._
+import hydra.notifications.client.HydraNotification
 import hydra.notifications.services.NotificationsSupervisor.{GetServiceList, SendNotification, ServiceList, ServiceNotFound}
 import spray.json.DefaultJsonProtocol
 
@@ -31,7 +32,7 @@ import scala.concurrent.duration._
 class NotificationsEndpoint(implicit val system: ActorSystem, implicit val actorRefFactory: ActorRefFactory)
   extends RoutedEndpoints with Directives with SprayJsonSupport with DefaultJsonProtocol {
 
-  import NotificationsFormat._
+  import hydra.notifications.client.NotificationsFormat._
 
   implicit val timeout = Timeout(5.seconds)
 
