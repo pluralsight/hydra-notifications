@@ -41,7 +41,7 @@ lazy val client = Project(
   id = "client",
   base = file("client"),
   settings = defaultSettings ++ Seq(libraryDependencies ++= Dependencies.clientDeps)
-).settings(name := "hydra-notifications-http")
+).settings(name := "hydra-notifications-client")
 
 lazy val server = Project(
   id = "server",
@@ -51,4 +51,4 @@ lazy val server = Project(
     mainClass in Compile := Some("hydra.notifications.NotificationsService"),
     javaOptions += "-Xmx2G"
   )
-).dependsOn(client).settings(name := "hydra-notifications-client").enablePlugins(JavaAppPackaging)
+).dependsOn(client).settings(name := "hydra-notifications-server").enablePlugins(JavaAppPackaging)
