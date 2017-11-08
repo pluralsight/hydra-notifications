@@ -27,28 +27,28 @@ lazy val defaultSettings = Seq(
   resolvers += "Confluent Maven Repo" at "http://packages.confluent.io/maven/",
   resolvers += "jitpack" at "https://jitpack.io",
   coverageExcludedPackages := "hydra\\.ingest\\.HydraIngestApp.*",
-  ivyLoggingLevel in ThisBuild := UpdateLogging.Quiet,
-  ivyScala := ivyScala.value map (_.copy(overrideScalaVersion = true))
+  ivyLoggingLevel in ThisBuild := UpdateLogging.Quiet
 )
 
 lazy val root = Project(
   id = "hydra-notifications",
-  base = file("."),
-  settings = defaultSettings
-).aggregate(server, client)
+  base = file(".")
+).settings(defaultSettings)
+  .aggregate(server, client)
 
 lazy val client = Project(
   id = "client",
-  base = file("client"),
-  settings = defaultSettings ++ Seq(libraryDependencies ++= Dependencies.clientDeps)
-).settings(name := "hydra-notifications-client")
+  base = file("client")
+).settings(defaultSettings, name := "hydra-notifications-client", libraryDependencies ++= Dependencies.clientDeps)
+
+val serverSettings = defaultSettings ++ Seq(libraryDependencies ++= Dependencies.serverDeps) ++ Seq(
+  mainClass in Compile := Some("hydra.notifications.NotificationsService"),
+  javaOptions += "-Xmx2G"
+)
 
 lazy val server = Project(
   id = "server",
-  base = file("server"),
-  settings = defaultSettings ++ Seq(libraryDependencies ++= Dependencies.serverDeps)
-    ++ Seq(
-    mainClass in Compile := Some("hydra.notifications.NotificationsService"),
-    javaOptions += "-Xmx2G"
-  )
-).dependsOn(client).settings(name := "hydra-notifications-server").enablePlugins(JavaAppPackaging)
+  base = file("server")
+).dependsOn(client)
+  .settings(serverSettings, name := "hydra-notifications-server")
+  .enablePlugins(JavaAppPackaging)
