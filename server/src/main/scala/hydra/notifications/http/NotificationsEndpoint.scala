@@ -39,11 +39,13 @@ class NotificationsEndpoint(implicit val system: ActorSystem, implicit val actor
   private val notificationsActor = system.actorSelection("/user/service/notifications_supervisor").resolveOne()
 
   override val route = onSuccess(notificationsActor) { actor =>
-    post {
-      entity(as[HydraNotification]) {
-        notify(actor, _)
-      }
-    } ~ getServices(actor)
+    path("/notification") {
+      post {
+        entity(as[HydraNotification]) {
+          notify(actor, _)
+        }
+      } ~ getServices(actor)
+    }
   }
 
 
