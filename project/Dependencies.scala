@@ -13,7 +13,7 @@ object Dependencies {
   val jodaConvertVersion = "1.8.1"
   val akkaHTTPVersion = "10.0.10"
   val scalaMockVersion = "3.5.0"
-  val serviceContainerVersion = "2.0.6"
+  val serviceContainerVersion = "2.0.7"
   val slackVersion = "0.2.1"
   val jerseyVersion = "1.9.1"
   val scalaCacheVersion = "0.9.3"
