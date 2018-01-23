@@ -38,7 +38,7 @@ object NotificationsService extends App {
   val builder = ContainerBuilder()
     .withConfig(config)
     .withRoutes(endpoints: _*)
-    .withName("hydra-notifications")
+    .withName("hydra")
     .withActors("notifications_supervisor" -> Props(classOf[NotificationsSupervisor], notificationServices))
 
   val container = builder.build
