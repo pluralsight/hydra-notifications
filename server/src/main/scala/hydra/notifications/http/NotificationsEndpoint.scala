@@ -15,7 +15,7 @@
  */
 package hydra.notifications.http
 
-import akka.actor.{ActorRef, ActorRefFactory, ActorSystem}
+import akka.actor.{ActorRef, ActorSystem}
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.server.{Directives, Route}
@@ -27,9 +27,10 @@ import hydra.notifications.client.{HydraNotification, NotificationsResponse}
 import hydra.notifications.services.NotificationsSupervisor.{GetServiceList, SendNotification, ServiceList, ServiceNotFound}
 import spray.json.DefaultJsonProtocol
 
+import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
 
-class NotificationsEndpoint(implicit val system: ActorSystem, implicit val actorRefFactory: ActorRefFactory)
+class NotificationsEndpoint(implicit system: ActorSystem, implicit val e: ExecutionContext)
   extends RoutedEndpoints with Directives with SprayJsonSupport with DefaultJsonProtocol {
 
   import hydra.notifications.client.NotificationsFormat._
