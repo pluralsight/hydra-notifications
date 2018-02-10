@@ -45,13 +45,13 @@ Modify `http.hydra.notifications.http.NotificationsFormat.scala` and add your se
 ## Slack
 
 ```bash
- curl -X POST localhost:8080 -d '{"channel":"hydra-ops","message":"an error occured","service":"slack"}'  -H "Content-Type:application/json"
+ curl -X POST localhost:8080/notify -d '{"channel":"hydra-ops","message":"an error occured","service":"slack"}'  -H "Content-Type:application/json"
 ```
  
 ## Ops Genie
  
 ```bash
-  curl -X POST localhost:8080 -d '{"source":"source","description":"description","tags":["tag1","tag2"],"service":"opsgenie","alias":"alias","note":"note","team":"team","entity":"entity","message":"message","user":"user"}' -H "Content-Type:application/json"
+  curl -X POST localhost:8080/notify -d '{"source":"source","description":"description","tags":["tag1","tag2"],"service":"opsgenie","alias":"alias","note":"note","team":"team","entity":"entity","message":"message","user":"user"}' -H "Content-Type:application/json"
 ``` 
 
 # Building
