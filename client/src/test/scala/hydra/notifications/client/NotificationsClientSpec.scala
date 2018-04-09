@@ -36,7 +36,7 @@ class NotificationsClientSpec extends TestKit(ActorSystem("test"))
 
   val wireMockServer = new WireMockServer(options().dynamicPort())
 
-  wireMockServer.stubFor(post(urlEqualTo("/"))
+  wireMockServer.stubFor(post(urlEqualTo("/notify"))
     .willReturn(aResponse()
       .withHeader("Content-Type", "application/json")
       .withBody(NotificationsResponse(200, "done").toJson.compactPrint)))
