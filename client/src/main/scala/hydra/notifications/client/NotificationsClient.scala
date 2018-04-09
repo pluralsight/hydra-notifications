@@ -24,7 +24,7 @@ class NotificationsClient(host: String, port: Int)(implicit sys: ActorSystem) ex
 
   def postNotification(notification: HydraNotification): Future[NotificationsResponse] = {
     Marshal(notification).to[RequestEntity].flatMap { entity =>
-      val post = Post("/").withEntity(entity)
+      val post = Post("/notify").withEntity(entity)
       Source.single(post).via(httpClient).runWith(Sink.head)
         .flatMap(r => Unmarshal(r.entity).to[NotificationsResponse])
     }
