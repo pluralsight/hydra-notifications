@@ -63,3 +63,6 @@ build.properties
 *.log
 /api/.idea/
 logs
+
+#don't commit your .env.  It normally contains secrets.
+.env

@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-
+<?xml version="1.0" encoding="utf-8"?>
 <!--
   ~ Copyright (C) 2017 Pluralsight, LLC.
   ~
@@ -14,34 +13,47 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-
 <Configuration>
+  <Appenders>
+    <Console name="STDOUT" target="SYSTEM_OUT">
+      <PatternLayout pattern="%d %-5p %C{2} (%F:%L) - %m%n" />
+    </Console>
+    <RollingFile name="VARLOG"
+    fileName="${env:LOG_DIR}/hydra-notifications.log" append="true"
+    filePattern="logs/$${date:yyyy-MM}/hydra-notifications-%d{yyyy-MM-dd}-%i.log.gz">
 
-    <Appenders>
-        <Console name="STDOUT" target="SYSTEM_OUT">
-            <PatternLayout pattern="%d %-5p %C{2} (%F:%L) - %m%n"/>
-        </Console>
+      <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} %-5p %c{1}:%L - %m%n" />
+      <Policies>
+        <TimeBasedTriggeringPolicy />
+        <!-- Rotated everyday -->
+        <SizeBasedTriggeringPolicy size="100 MB" />
+        <!-- Or every 100 MB -->
+      </Policies>
+    </RollingFile>
+    <RollingFile name="JSONLOG"
+    fileName="${env:LOG_DIR}/hydra-notifications.ndjson"
+    append="true"
+    filePattern="${env:LOG_DIR}/$${date:yyyy-MM}/hydra-notifications-%d{yyyy-MM-dd}-%i.ndjson.gz">
 
-        <RollingFile name="VARLOG" fileName="/var/log/hydra/hydra_notifications.log" append="true"
-                     filePattern="logs/$${date:yyyy-MM}/${name}-%d{yyyy-MM-dd}-%i.log.gz">
-            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} %-5p %c{1}:%L - %m%n"/>
-            <Policies>
-                <TimeBasedTriggeringPolicy /><!-- Rotated everyday -->
-                <SizeBasedTriggeringPolicy size="100 MB"/> <!-- Or every 100 MB -->
-            </Policies>
-        </RollingFile>
-    </Appenders>
-    <Loggers>
-
-        <Logger name="hydra" level="DEBUG" additivity="false">
-            <AppenderRef ref="VARLOG"/>
-            <AppenderRef ref="STDOUT"/>
-        </Logger>
-
-        <Root level="debug">
-            <AppenderRef ref="STDOUT"/>
-            <AppenderRef ref="VARLOG"/>
-        </Root>
-
-    </Loggers>
+      <JsonLayout compact="true" eventEol="true" />
+      <Policies>
+        <!-- Rotated everyday -->
+        <TimeBasedTriggeringPolicy interval="1" modulate="true" />
+        <!-- Or every 100 MB -->
+        <SizeBasedTriggeringPolicy size="100 MB" />
+      </Policies>
+    </RollingFile>
+  </Appenders>
+  <Loggers>
+    <Logger name="hydra" additivity="false">
+      <AppenderRef ref="VARLOG" />
+      <AppenderRef ref="STDOUT" />
+      <AppenderRef ref="JSONLOG" />
+    </Logger>
+    <Root level="${env:LOG_LEVEL}">
+      <AppenderRef ref="STDOUT" />
+      <AppenderRef ref="VARLOG" />
+      <AppenderRef ref="JSONLOG" />
+    </Root>
+  </Loggers>
 </Configuration>
