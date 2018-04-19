@@ -24,12 +24,8 @@ import slack.api.SlackApiClient
 import slack.models.Channel
 
 import scala.concurrent.Future
-import scalacache.ScalaCache
-import scalacache.guava.GuavaCache
 
 class Slack extends Actor with ActorLogging with HydraNotificationService {
-
-  import scalacache._
 
   private val config = ConfigFactory.load()
 
@@ -41,7 +37,8 @@ class Slack extends Actor with ActorLogging with HydraNotificationService {
 
   private implicit val system = context.system
 
-  private implicit val cache = SlackNotificationsActor.channelCache
+  //private implicit val cache = SlackNotificationsActor.channelCache
+
 
   override def receive = {
     case Notify(slack: SlackNotification) =>
@@ -54,14 +51,14 @@ class Slack extends Actor with ActorLogging with HydraNotificationService {
   }
 
   private def getChannel(channelName: String): Future[Channel] = {
-    caching(channelName) {
+    //caching(channelName) {
       slackClient.listChannels().map(c => c.find(_.name == channelName))
         .map { c => c.getOrElse(throw new IllegalArgumentException(s"Slack channel $channelName not found.")) }
-    }
+   // }
   }
 
 }
 
 object SlackNotificationsActor {
-  implicit val channelCache = ScalaCache(GuavaCache())
+ // implicit val channelCache = ScalaCache(GuavaCache())
 }

@@ -36,6 +36,8 @@ class OpsGenie extends Actor with ActorLogging with HydraNotificationService {
 
   override def preStart(): Unit = client.getApiClient().setApiKey(token)
 
+  override def postStop(): Unit = Try(client.getApiClient.getHttpClient.destroy())
+
   override def receive: Receive = {
     case Notify(opsGenie: OpsGenieNotification) =>
       val response = Try(client.createAlert(alertRequest(opsGenie)))
