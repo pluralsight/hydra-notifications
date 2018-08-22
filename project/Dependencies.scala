@@ -15,7 +15,7 @@ object Dependencies {
   val scalaMockVersion = "3.5.0"
   val serviceContainerVersion = "2.0.7"
   val slackVersion = "0.2.3"
-  val jerseyVersion = "2.25.1"
+  val jerseyVersion = "1.9.1"
   val scalaCacheVersion = "0.9.3"
   val reflectionsVersion = "0.9.10"
 
@@ -51,10 +51,10 @@ object Dependencies {
 
     val opsGenie = Seq(
       "com.opsgenie.integration" % "sdk" % "2.11.2",
-      "org.glassfish.jersey.core" % "jersey-client" % jerseyVersion,
-      "org.glassfish.jersey.core" % "jersey-server" % jerseyVersion exclude("asm", "asm"),
-      "org.glassfish.jersey.media" % "jersey-media-json-jackson" % jerseyVersion,
-      "com.sun.jersey.contribs" % "jersey-multipart" % "1.19.4"
+      "com.sun.jersey" % "jersey-core" % jerseyVersion,
+      "com.sun.jersey" % "jersey-server" % jerseyVersion exclude("asm", "asm"),
+      "com.sun.jersey" % "jersey-json" % jerseyVersion,
+      "com.sun.jersey.contribs" % "jersey-multipart" % jerseyVersion
     )
 
     val reflections = "org.reflections" % "reflections" % reflectionsVersion

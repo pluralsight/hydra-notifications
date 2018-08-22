@@ -8,6 +8,8 @@ case class SlackNotification(channel: String, message: String) extends HydraNoti
   override val service = "slack"
 }
 
+
+
 case class OpsGenieNotification(message: String,
                                 alias: String,
                                 description: Option[String],
