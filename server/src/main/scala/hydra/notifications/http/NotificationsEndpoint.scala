@@ -69,4 +69,3 @@ class NotificationsEndpoint(implicit system: ActorSystem, implicit val e: Execut
     }
   }
 }
-

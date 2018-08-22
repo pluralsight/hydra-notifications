@@ -3,7 +3,7 @@ import sbt.{ExclusionRule, _}
 
 object Dependencies {
 
-  val akkaVersion = "2.5.11"
+  val akkaVersion = "2.5.14"
   val scalaTestVersion = "3.0.1"
   val slf4jVersion = "1.7.29"
   val log4jVersion = "2.7"
@@ -11,7 +11,7 @@ object Dependencies {
   val typesafeConfigVersion = "1.3.1"
   val jodaTimeVersion = "2.9.9"
   val jodaConvertVersion = "1.8.1"
-  val akkaHTTPVersion = "10.0.10"
+  val akkaHTTPVersion = "10.1.0"
   val scalaMockVersion = "3.5.0"
   val serviceContainerVersion = "2.0.7"
   val slackVersion = "0.2.3"
@@ -49,11 +49,13 @@ object Dependencies {
 
     val slack = "com.github.gilbertw1" %% "slack-scala-client" % slackVersion
 
-    val opsGenie = Seq("com.opsgenie.integration" % "sdk" % "2.11.0",
+    val opsGenie = Seq(
+      "com.opsgenie.integration" % "sdk" % "2.11.2",
       "com.sun.jersey" % "jersey-core" % jerseyVersion,
       "com.sun.jersey" % "jersey-server" % jerseyVersion exclude("asm", "asm"),
       "com.sun.jersey" % "jersey-json" % jerseyVersion,
-      "com.sun.jersey.contribs" % "jersey-multipart" % jerseyVersion)
+      "com.sun.jersey.contribs" % "jersey-multipart" % jerseyVersion
+    )
 
     val reflections = "org.reflections" % "reflections" % reflectionsVersion
 
