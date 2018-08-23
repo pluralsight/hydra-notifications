@@ -49,7 +49,6 @@ class NotificationsEndpoint(implicit system: ActorSystem, implicit val e: Execut
     }
   }
 
-
   private def getServices(supervisor: ActorRef): Route = get {
     onSuccess(supervisor ? GetServiceList) { msg =>
       msg match {
