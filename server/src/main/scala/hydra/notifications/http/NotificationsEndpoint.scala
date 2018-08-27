@@ -19,52 +19,76 @@ import akka.actor.{ActorRef, ActorSystem}
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.server.{Directives, Route}
+import akka.http.scaladsl.unmarshalling.PredefinedFromStringUnmarshallers._
 import akka.pattern.ask
 import akka.util.Timeout
 import com.github.vonnagy.service.container.http.routing.RoutedEndpoints
 import hydra.notifications._
-import hydra.notifications.client.{HydraNotification, NotificationsResponse}
+import hydra.notifications.client.{HydraNotification, NotificationsResponse, OpsGenieNotification, SlackNotification}
 import hydra.notifications.services.NotificationsSupervisor.{GetServiceList, SendNotification, ServiceList, ServiceNotFound}
 import spray.json.DefaultJsonProtocol
 
-import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
+import scala.concurrent.{ExecutionContext, Future}
 
-class NotificationsEndpoint(implicit system: ActorSystem, implicit val e: ExecutionContext)
+class NotificationsEndpoint(notificationsSupervisorOpt: Option[ActorRef] = None)
+                           (implicit system: ActorSystem, implicit val e: ExecutionContext)
   extends RoutedEndpoints with Directives with SprayJsonSupport with DefaultJsonProtocol {
-
-  import hydra.notifications.client.NotificationsFormat._
 
   implicit val timeout = Timeout(5.seconds)
 
-  private val notificationsActor = system.actorSelection("/user/service/notifications_supervisor").resolveOne()
+  private val notificationsSupervisor = notificationsSupervisorOpt match {
+    case Some(value) => Future.successful(value)
+    case None => system.actorSelection("/user/service/notifications_supervisor").resolveOne()
+  }
 
-  override val route = onSuccess(notificationsActor) { actor =>
-    pathPrefix("notify") {
+  private def opsGenieRoute(notificationsSupervisor: ActorRef) =
+    pathPrefix("notify/opsgenie") {
       post {
-        entity(as[HydraNotification]) {
-          notify(actor, _)
+        entity(as[String]) { message =>
+          parameters('alias, 'description.?, 'note.?, 'team, "tags".as(CsvSeq[String]), 'entity,
+            'source.?, 'user) { (alias, descriptionOpt, noteOpt, team, tags, entity, sourceOpt, user) =>
+            val notification = OpsGenieNotification(message, alias, descriptionOpt, noteOpt, team,
+              tags, entity, sourceOpt, user)
+
+            notify(notificationsSupervisor, notification)
+          }
         }
-      } ~ getServices(actor)
+      }
     }
+
+  private def slackRoute(notificationsSupervisor: ActorRef) =
+    pathPrefix("notify/slack") {
+      post {
+        entity(as[String]) { message =>
+          parameters('channel) { channel =>
+            val notification = SlackNotification(channel, message)
+            notify(notificationsSupervisor, notification)
+          }
+        }
+      }
+    }
+
+  private val customNotificationRoute = {
+    pathPrefix("notify")
+  }
+
+  override val route = onSuccess(notificationsSupervisor) { sup =>
+    opsGenieRoute(sup) ~ slackRoute(sup) ~ getServices(sup)
   }
 
   private def getServices(supervisor: ActorRef): Route = get {
-    onSuccess(supervisor ? GetServiceList) { msg =>
-      msg match {
-        case ServiceList(svcs) => complete(OK, svcs)
-        case r => complete(400, NotificationsResponse(400, r.toString))
-      }
+    onSuccess(supervisor ? GetServiceList) {
+      case ServiceList(svcs) => complete(OK, svcs)
+      case r => complete(400, NotificationsResponse(400, r.toString))
     }
   }
 
   private def notify(supervisor: ActorRef, notification: HydraNotification): Route = {
-    onSuccess(supervisor ? SendNotification(notification)) { msg =>
-      msg match {
-        case NotificationSent(message) => complete(OK, NotificationsResponse(200, message))
-        case ServiceNotFound(s) => complete(NotFound, NotificationsResponse(404, s"Service $s not found."))
-        case NotificationSendError(code, error) => complete(code, NotificationsResponse(code, error))
-      }
+    onSuccess(supervisor ? SendNotification(notification)) {
+      case NotificationSent(message) => complete(OK, NotificationsResponse(200, message))
+      case ServiceNotFound(s) => complete(NotFound, NotificationsResponse(404, s"Service $s not found."))
+      case NotificationSendError(code, error) => complete(code, NotificationsResponse(code, error))
     }
   }
 }
