@@ -29,53 +29,47 @@ import hydra.notifications.services.NotificationsSupervisor.{GetServiceList, Sen
 import spray.json.DefaultJsonProtocol
 
 import scala.concurrent.duration._
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
-class NotificationsEndpoint(notificationsSupervisorOpt: Option[ActorRef] = None)
-                           (implicit system: ActorSystem, implicit val e: ExecutionContext)
+class NotificationsEndpoint(implicit system: ActorSystem, implicit val e: ExecutionContext)
   extends RoutedEndpoints with Directives with SprayJsonSupport with DefaultJsonProtocol {
 
-  implicit val timeout = Timeout(5.seconds)
 
-  private val notificationsSupervisor = notificationsSupervisorOpt match {
-    case Some(value) => Future.successful(value)
-    case None => system.actorSelection("/user/service/notifications_supervisor").resolveOne()
-  }
+  implicit val timeout: Timeout = Timeout(5.seconds)
 
-  private def opsGenieRoute(notificationsSupervisor: ActorRef) =
-    pathPrefix("notify/opsgenie") {
-      post {
+  private val notificationsSupervisor = system
+    .actorSelection("/user/service/notifications_supervisor")
+    .resolveOne()
+
+  private def combinedRoute(supervisor: ActorRef) =
+    post {
+      path("notify" / "opsgenie") {
         entity(as[String]) { message =>
           parameters('alias, 'description.?, 'note.?, 'team, "tags".as(CsvSeq[String]), 'entity,
             'source.?, 'user) { (alias, descriptionOpt, noteOpt, team, tags, entity, sourceOpt, user) =>
             val notification = OpsGenieNotification(message, alias, descriptionOpt, noteOpt, team,
               tags, entity, sourceOpt, user)
 
-            notify(notificationsSupervisor, notification)
+            notify(supervisor, notification)
           }
         }
-      }
-    }
-
-  private def slackRoute(notificationsSupervisor: ActorRef) =
-    pathPrefix("notify/slack") {
-      post {
+      } ~ path("notify" / "slack") {
         entity(as[String]) { message =>
           parameters('channel) { channel =>
             val notification = SlackNotification(channel, message)
-            notify(notificationsSupervisor, notification)
+            notify(supervisor, notification)
           }
         }
       }
     }
 
-  private val customNotificationRoute = {
-    pathPrefix("notify")
+  override val route: Route = onSuccess(notificationsSupervisor) { sup =>
+    path("notify") {
+        getServices(sup)
+    } ~ combinedRoute(sup)
   }
 
-  override val route = onSuccess(notificationsSupervisor) { sup =>
-    opsGenieRoute(sup) ~ slackRoute(sup) ~ getServices(sup)
-  }
+  import hydra.notifications.client.NotificationsFormat._
 
   private def getServices(supervisor: ActorRef): Route = get {
     onSuccess(supervisor ? GetServiceList) {
