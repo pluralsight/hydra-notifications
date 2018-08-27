@@ -19,53 +19,70 @@ import akka.actor.{ActorRef, ActorSystem}
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.server.{Directives, Route}
+import akka.http.scaladsl.unmarshalling.PredefinedFromStringUnmarshallers._
 import akka.pattern.ask
 import akka.util.Timeout
 import com.github.vonnagy.service.container.http.routing.RoutedEndpoints
 import hydra.notifications._
-import hydra.notifications.client.{HydraNotification, NotificationsResponse}
+import hydra.notifications.client.{HydraNotification, NotificationsResponse, OpsGenieNotification, SlackNotification}
 import hydra.notifications.services.NotificationsSupervisor.{GetServiceList, SendNotification, ServiceList, ServiceNotFound}
 import spray.json.DefaultJsonProtocol
 
-import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
+import scala.concurrent.ExecutionContext
 
 class NotificationsEndpoint(implicit system: ActorSystem, implicit val e: ExecutionContext)
   extends RoutedEndpoints with Directives with SprayJsonSupport with DefaultJsonProtocol {
 
-  import hydra.notifications.client.NotificationsFormat._
 
-  implicit val timeout = Timeout(5.seconds)
+  implicit val timeout: Timeout = Timeout(5.seconds)
 
-  private val notificationsActor = system.actorSelection("/user/service/notifications_supervisor").resolveOne()
+  private val notificationsSupervisor = system
+    .actorSelection("/user/service/notifications_supervisor")
+    .resolveOne()
 
-  override val route = onSuccess(notificationsActor) { actor =>
-    pathPrefix("notify") {
-      post {
-        entity(as[HydraNotification]) {
-          notify(actor, _)
+  private def combinedRoute(supervisor: ActorRef) =
+    post {
+      path("notify" / "opsgenie") {
+        entity(as[String]) { message =>
+          parameters('alias, 'description.?, 'note.?, 'team, "tags".as(CsvSeq[String]), 'entity,
+            'source.?, 'user) { (alias, descriptionOpt, noteOpt, team, tags, entity, sourceOpt, user) =>
+            val notification = OpsGenieNotification(message, alias, descriptionOpt, noteOpt, team,
+              tags, entity, sourceOpt, user)
+
+            notify(supervisor, notification)
+          }
         }
-      } ~ getServices(actor)
+      } ~ path("notify" / "slack") {
+        entity(as[String]) { message =>
+          parameters('channel) { channel =>
+            val notification = SlackNotification(channel, message)
+            notify(supervisor, notification)
+          }
+        }
+      }
     }
+
+  override val route: Route = onSuccess(notificationsSupervisor) { sup =>
+    path("notify") {
+        getServices(sup)
+    } ~ combinedRoute(sup)
   }
 
+  import hydra.notifications.client.NotificationsFormat._
 
   private def getServices(supervisor: ActorRef): Route = get {
-    onSuccess(supervisor ? GetServiceList) { msg =>
-      msg match {
-        case ServiceList(svcs) => complete(OK, svcs)
-        case r => complete(400, NotificationsResponse(400, r.toString))
-      }
+    onSuccess(supervisor ? GetServiceList) {
+      case ServiceList(svcs) => complete(OK, svcs)
+      case r => complete(400, NotificationsResponse(400, r.toString))
     }
   }
 
   private def notify(supervisor: ActorRef, notification: HydraNotification): Route = {
-    onSuccess(supervisor ? SendNotification(notification)) { msg =>
-      msg match {
-        case NotificationSent(message) => complete(OK, NotificationsResponse(200, message))
-        case ServiceNotFound(s) => complete(NotFound, NotificationsResponse(404, s"Service $s not found."))
-        case NotificationSendError(code, error) => complete(code, NotificationsResponse(code, error))
-      }
+    onSuccess(supervisor ? SendNotification(notification)) {
+      case NotificationSent(message) => complete(OK, NotificationsResponse(200, message))
+      case ServiceNotFound(s) => complete(NotFound, NotificationsResponse(404, s"Service $s not found."))
+      case NotificationSendError(code, error) => complete(code, NotificationsResponse(code, error))
     }
   }
 }
