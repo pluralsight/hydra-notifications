@@ -3,6 +3,7 @@ import sbt.{ExclusionRule, _}
 
 object Dependencies {
 
+  val hydraVersion = "c412c81906"
   val akkaVersion = "2.5.14"
   val scalaTestVersion = "3.0.1"
   val slf4jVersion = "1.7.29"
@@ -20,6 +21,10 @@ object Dependencies {
   val reflectionsVersion = "0.9.10"
 
   object Compile {
+
+    val hydra = Seq(
+      "com.github.pluralsight.hydra" % "hydra-core_2.12" % hydraVersion)
+      .map(_ excludeAll("com.fasterxml.jackson.core", "org.apache.logging.log4j" % "log4j-slf4j-impl"))
 
     val scalaConfigs = "com.github.kxbmap" %% "configs" % kxbmapConfigVersion
 
@@ -78,7 +83,7 @@ object Dependencies {
   val testClientDeps = Seq(scalaTest, scalaMock, wireMock) ++ akkaTest
 
   val serverDeps = Seq(scalaConfigs, slack, guavacache, typesafeConfig, serviceContainer,
-    reflections) ++ akka ++ joda ++ logging ++ testDeps ++ opsGenie
+    reflections) ++ hydra ++ akka ++ joda ++ logging ++ testDeps ++ opsGenie
 
   val clientDeps = akka ++ testClientDeps
 
