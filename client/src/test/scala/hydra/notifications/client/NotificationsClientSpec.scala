@@ -36,7 +36,12 @@ class NotificationsClientSpec extends TestKit(ActorSystem("test"))
 
   val wireMockServer = new WireMockServer(options().dynamicPort())
 
-  wireMockServer.stubFor(post(urlEqualTo("/notify"))
+  wireMockServer.stubFor(post(urlPathEqualTo("/notify/slack"))
+    .willReturn(aResponse()
+      .withHeader("Content-Type", "application/json")
+      .withBody(NotificationsResponse(200, "done").toJson.compactPrint)))
+
+  wireMockServer.stubFor(post(urlPathEqualTo("/notify/opsgenie"))
     .willReturn(aResponse()
       .withHeader("Content-Type", "application/json")
       .withBody(NotificationsResponse(200, "done").toJson.compactPrint)))
@@ -54,6 +59,13 @@ class NotificationsClientSpec extends TestKit(ActorSystem("test"))
   describe("The Notifications Client") {
     it("sends a slack notification") {
       val response = client.postNotification(SlackNotification("test", "test"))
+      whenReady(response) { r => r shouldBe NotificationsResponse(200, "done") }
+    }
+
+    it("sends an opsgenie notification") {
+      val response = client.postNotification(OpsGenieNotification(
+        "testMessage", "alias", Some("description"), Some("note"), "team", Seq("tag"),
+        "entity", Some("source"), "user"))
       whenReady(response) { r => r shouldBe NotificationsResponse(200, "done") }
     }
   }

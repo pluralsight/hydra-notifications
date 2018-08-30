@@ -2,12 +2,13 @@ package hydra.notifications.client
 
 abstract class HydraNotification {
   def service: String
+
+  def message: String
 }
 
 case class SlackNotification(channel: String, message: String) extends HydraNotification {
   override val service = "slack"
 }
-
 
 
 case class OpsGenieNotification(message: String,
@@ -24,4 +25,4 @@ case class OpsGenieNotification(message: String,
 }
 
 
-case class NotificationsResponse(statusCode:Int, message: String)
+case class NotificationsResponse(statusCode: Int, message: String)
