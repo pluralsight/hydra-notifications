@@ -15,35 +15,22 @@
  */
 package hydra.notifications
 
-import java.io.File
 import java.lang.reflect.Modifier
 
 import akka.actor.Props
-import com.github.vonnagy.service.container.ContainerBuilder
-import com.github.vonnagy.service.container.http.routing.RoutedEndpoints
-import com.typesafe.config.ConfigFactory
-import configs.syntax._
+import hydra.core.bootstrap.{BootstrappingSupport, ServiceProvider}
 import hydra.notifications.services.NotificationsSupervisor
 import org.apache.commons.lang3.ClassUtils
 import org.reflections.Reflections
 
-object NotificationsService extends App {
+object NotificationsService extends App with BootstrappingSupport {
+  containerService.start()
+}
 
-  val config = ConfigFactory.load()
-    .withFallback(ConfigFactory.parseFile(new File("/etc/hydra/hydra-notifications.conf")))
-
-  val endpoints = config.get[List[String]]("hydra.notifications.endpoints").valueOrElse(Seq.empty)
-    .map(Class.forName(_).asInstanceOf[Class[_ <: RoutedEndpoints]])
-
-  val builder = ContainerBuilder()
-    .withConfig(config)
-    .withRoutes(endpoints: _*)
-    .withName("hydra")
-    .withActors("notifications_supervisor" -> Props(classOf[NotificationsSupervisor], notificationServices))
-
-  val container = builder.build
-
-  container.start()
+class NotificationsServicesProvider extends ServiceProvider {
+  override def services: Seq[(String, Props)] =
+    Seq("notifications_supervisor" -> Props(classOf[NotificationsSupervisor],
+      notificationServices))
 
   private def notificationServices: Map[String, Props] = {
     import scala.collection.JavaConverters._
@@ -52,7 +39,5 @@ object NotificationsService extends App {
     reflections.getSubTypesOf(classOf[HydraNotificationService])
       .asScala.filterNot(c => Modifier.isAbstract(c.getModifiers))
       .map(c => ClassUtils.getShortCanonicalName(c).toLowerCase -> Props(c)).toMap
-
   }
-
 }
