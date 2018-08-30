@@ -41,7 +41,7 @@ class NotificationsClient(host: String, port: Int)(implicit sys: ActorSystem) ex
       case s =>
         throw new IllegalArgumentException(s"$s is not a supported notification service.")
     }
-    
+
     Source.single(Post(uri)
       .withEntity(ContentTypes.`application/json`, notification.message))
       .via(httpClient)
