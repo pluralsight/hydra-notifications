@@ -21,11 +21,12 @@ import spray.json.{DefaultJsonProtocol, JsObject, JsString, JsValue, RootJsonFor
 object NotificationsFormat extends DefaultJsonProtocol with SprayJsonSupport {
 
 
-  implicit val opsGenieFormat = jsonFormat(OpsGenieNotification,"message","alias","description","note","team","tags","entity","source","user")
+  implicit val opsGenieFormat = jsonFormat(OpsGenieNotification, "message", "alias", "description", "note", "team", "tags", "entity", "source", "user")
 
-  implicit val slackFormat = jsonFormat(SlackNotification,"channel","message")
+  implicit val slackFormat = jsonFormat(SlackNotification, "channel", "message")
 
   implicit val notificationsResponseFormat = jsonFormat2(NotificationsResponse)
+
 
   implicit val notificationsFormat = new RootJsonFormat[HydraNotification] {
     def write(obj: HydraNotification): JsValue =
