@@ -7,6 +7,37 @@ val JDK = "1.8"
 val buildNumber = scala.util.Properties.envOrNone("version").map(v => "." + v).getOrElse("")
 val hydraNotificationsVersion = "0.1.0" + buildNumber
 
+lazy val dockerSettings = Seq(
+  buildOptions in docker := BuildOptions(
+    cache = false,
+    removeIntermediateContainers = BuildOptions.Remove.Always,
+    pullBaseImage = BuildOptions.Pull.IfMissing
+  ),
+  dockerfile in docker := {
+    val appDir: File = stage.value
+    val targetDir = "/app"
+
+    new Dockerfile {
+      from("java")
+      maintainer("Alex Silva <alex-silva@pluralsight.com>")
+      user("root")
+      env("JAVA_OPTS", "-Xmx4G")
+      run("mkdir", "-p", "/var/log/hydra")
+      expose(9090)
+      entryPoint(s"$targetDir/bin/${executableScriptName.value}")
+      copy(appDir, targetDir)
+    }
+  },
+  imageNames in docker := Seq(
+    ImageName(s"${organization.value}/hydra-notifications:latest"),
+    ImageName(
+      namespace = Some(organization.value),
+      repository = "hydra-notifications",
+      tag = Some(version.value)
+    )
+  )
+)
+
 lazy val defaultSettings = Seq(
   organization := "pluralsight",
   version := hydraNotificationsVersion,
@@ -50,5 +81,5 @@ lazy val server = Project(
   id = "server",
   base = file("server")
 ).dependsOn(client)
-  .settings(serverSettings, name := "hydra-notifications-server")
-  .enablePlugins(JavaAppPackaging)
+  .settings(serverSettings, dockerSettings, name := "hydra-notifications-server")
+  .enablePlugins(JavaAppPackaging, sbtdocker.DockerPlugin)
