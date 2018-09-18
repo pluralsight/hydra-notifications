@@ -7,6 +7,8 @@ val JDK = "1.8"
 val buildNumber = scala.util.Properties.envOrNone("version").map(v => "." + v).getOrElse("")
 val hydraNotificationsVersion = "0.1.0" + buildNumber
 
+val psDockerRepo = "registry.vnerd.com:5000"
+
 lazy val dockerSettings = Seq(
   buildOptions in docker := BuildOptions(
     cache = false,
@@ -15,7 +17,9 @@ lazy val dockerSettings = Seq(
   ),
   dockerfile in docker := {
     val appDir: File = stage.value
-    val targetDir = "/app"
+    val targetDir = "/opt/hydra-notifications-server"
+
+    val portNumber = sys.env.getOrElse[String]("PORT_NUMBER", "8080").toInt
 
     new Dockerfile {
       from("java")
@@ -23,15 +27,15 @@ lazy val dockerSettings = Seq(
       user("root")
       env("JAVA_OPTS", "-Xmx4G")
       run("mkdir", "-p", "/var/log/hydra")
-      expose(9090)
+      expose(portNumber)
       entryPoint(s"$targetDir/bin/${executableScriptName.value}")
       copy(appDir, targetDir)
     }
   },
   imageNames in docker := Seq(
-    ImageName(s"${organization.value}/hydra-notifications:latest"),
+    ImageName(s"$psDockerRepo/hydra-notifications:latest"),
     ImageName(
-      namespace = Some(organization.value),
+      namespace = Some(psDockerRepo),
       repository = "hydra-notifications",
       tag = Some(version.value)
     )
