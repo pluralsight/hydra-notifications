@@ -3,7 +3,7 @@ import sbt.{ExclusionRule, _}
 
 object Dependencies {
 
-  val hydraVersion = "c412c81906"
+  val hydraVersion = "b53040d5b9"
   val akkaVersion = "2.5.14"
   val scalaTestVersion = "3.0.1"
   val slf4jVersion = "1.7.29"
