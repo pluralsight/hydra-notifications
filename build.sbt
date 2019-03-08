@@ -7,7 +7,7 @@ val JDK = "1.8"
 val buildNumber = scala.util.Properties.envOrNone("version").map(v => "." + v).getOrElse("")
 val hydraNotificationsVersion = "0.1.0" + buildNumber
 
-val psDockerRepo = "registry.vnerd.com:5000"
+val psDockerRepo = "harbor.vnerd.com/library"
 
 lazy val dockerSettings = Seq(
   buildOptions in docker := BuildOptions(
