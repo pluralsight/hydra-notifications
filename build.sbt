@@ -7,7 +7,7 @@ val JDK = "1.8"
 val buildNumber = scala.util.Properties.envOrNone("version").map(v => "." + v).getOrElse("")
 val hydraNotificationsVersion = "0.1.0" + buildNumber
 
-val registryUrl = sys.env.get("DOCKER_REGISTRY_URL")
+val registryUrl = sys.env.getOrElse("DOCKER_REGISTRY_URL", "")
 
 lazy val dockerSettings = Seq(
   buildOptions in docker := BuildOptions(
