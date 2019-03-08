@@ -7,8 +7,6 @@ val JDK = "1.8"
 val buildNumber = scala.util.Properties.envOrNone("version").map(v => "." + v).getOrElse("")
 val hydraNotificationsVersion = "0.1.0" + buildNumber
 
-val psDockerRepo = "registry.vnerd.com:5000"
-
 lazy val dockerSettings = Seq(
   buildOptions in docker := BuildOptions(
     cache = false,
@@ -33,9 +31,9 @@ lazy val dockerSettings = Seq(
     }
   },
   imageNames in docker := Seq(
-    ImageName(s"$psDockerRepo/hydra-notifications:latest"),
+    ImageName(s"${organization.value}/hydra-notifications:latest"),
     ImageName(
-      namespace = Some(psDockerRepo),
+      namespace = Some(organization.value),
       repository = "hydra-notifications",
       tag = Some(version.value)
     )
