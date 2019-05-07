@@ -17,20 +17,33 @@ package hydra.notifications
 
 import java.lang.reflect.Modifier
 
-import akka.actor.Props
-import hydra.core.bootstrap.{BootstrappingSupport, ServiceProvider}
+import akka.actor.{ActorSystem, Props}
+import akka.http.scaladsl.Http
+import akka.http.scaladsl.server.RouteConcatenation
+import akka.stream.ActorMaterializer
+import com.typesafe.config.ConfigFactory
+import hydra.notifications.http.{HealthEndpoint, NotificationsEndpoint}
 import hydra.notifications.services.NotificationsSupervisor
 import org.apache.commons.lang3.ClassUtils
 import org.reflections.Reflections
 
-object NotificationsService extends App with BootstrappingSupport {
-  containerService.start()
-}
+object NotificationsService extends App with RouteConcatenation {
 
-class NotificationsServicesProvider extends ServiceProvider {
-  override def services: Seq[(String, Props)] =
-    Seq("notifications_supervisor" -> Props(classOf[NotificationsSupervisor],
-      notificationServices))
+
+  implicit val system = ActorSystem()
+
+  implicit val materializer = ActorMaterializer()
+
+  private val config = ConfigFactory.load
+
+  private val httpPort = config.getInt("container.http.port")
+
+  val notificationsSupervisor = system.actorOf(Props(classOf[NotificationsSupervisor],
+    notificationServices), "notifications_supervisor")
+
+  val routes = HealthEndpoint.routes ~ new NotificationsEndpoint(notificationsSupervisor).routes
+
+  val server = Http().bindAndHandle(routes, "0.0.0.0", httpPort)
 
   private def notificationServices: Map[String, Props] = {
     import scala.collection.JavaConverters._

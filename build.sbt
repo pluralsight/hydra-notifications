@@ -81,9 +81,19 @@ val serverSettings = defaultSettings ++ Seq(libraryDependencies ++= Dependencies
   javaOptions += "-Xmx2G"
 )
 
+val gitCommitString = SettingKey[String]("gitCommit")
+
+gitCommitString := git.gitHeadCommit.value.getOrElse("Not Set")
+
 lazy val server = Project(
   id = "server",
   base = file("server")
 ).dependsOn(client)
   .settings(serverSettings, dockerSettings, name := "hydra-notifications-server")
-  .enablePlugins(JavaAppPackaging, sbtdocker.DockerPlugin)
+  .enablePlugins(JavaAppPackaging, sbtdocker.DockerPlugin, BuildInfoPlugin)
+  .settings(
+    buildInfoKeys := Seq[BuildInfoKey](version, gitCommitString),
+    buildInfoPackage := "buildInfo",
+    buildInfoOptions += BuildInfoOption.ToMap,
+    buildInfoOptions += BuildInfoOption.ToJson
+  )

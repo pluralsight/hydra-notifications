@@ -31,15 +31,11 @@ import spray.json.DefaultJsonProtocol
 import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext
 
-class NotificationsEndpoint(implicit system: ActorSystem, implicit val e: ExecutionContext)
-  extends RoutedEndpoints with Directives with SprayJsonSupport with DefaultJsonProtocol {
+class NotificationsEndpoint(notificationsSupervisor: ActorRef)
+  extends Directives with SprayJsonSupport with DefaultJsonProtocol {
 
 
   implicit val timeout: Timeout = Timeout(5.seconds)
-
-  private val notificationsSupervisor = system
-    .actorSelection("/user/service/notifications_supervisor")
-    .resolveOne()
 
   private def combinedRoute(supervisor: ActorRef) =
     post {
@@ -63,11 +59,10 @@ class NotificationsEndpoint(implicit system: ActorSystem, implicit val e: Execut
       }
     }
 
-  override val route: Route = onSuccess(notificationsSupervisor) { sup =>
-    path("notify") {
-        getServices(sup)
-    } ~ combinedRoute(sup)
-  }
+  val routes: Route = path("notify") {
+    getServices(notificationsSupervisor)
+  } ~ combinedRoute(notificationsSupervisor)
+
 
   import hydra.notifications.client.NotificationsFormat._
 
