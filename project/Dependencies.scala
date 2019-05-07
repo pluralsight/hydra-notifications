@@ -32,6 +32,7 @@ object Dependencies {
 
     val akka = Seq("com.typesafe.akka" %% "akka-actor" % akkaVersion,
       "com.typesafe.akka" %% "akka-stream" % akkaVersion,
+      "com.typesafe.akka" %% "akka-cluster" % akkaVersion,
       "com.typesafe.akka" %% "akka-slf4j" % akkaVersion,
       "com.typesafe.akka" %% "akka-http-spray-json" % akkaHTTPVersion,
       "ch.megard" %% "akka-http-cors" % "0.2.1")

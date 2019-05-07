@@ -1,9 +1,10 @@
 package hydra.notifications.http
 
-import akka.actor.{Actor, ActorRef, Props}
+import akka.actor.{Actor, Props}
 import akka.http.scaladsl.testkit.ScalatestRouteTest
-import akka.testkit.{TestKit, TestProbe}
-import hydra.notifications.client.{OpsGenieNotification, SlackNotification}
+import akka.testkit.TestKit
+import hydra.notifications.NotificationSent
+import hydra.notifications.client.HydraNotification
 import hydra.notifications.services.NotificationsSupervisor.SendNotification
 import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers}
 
@@ -18,23 +19,12 @@ class NotificationsEndpointSpec extends FlatSpec
 
   implicit val ec: ExecutionContextExecutor = system.dispatcher
 
-  class ParentActor(to: ActorRef) extends Actor {
-    val childActor = context.actorOf(Props(new ForwardingActor(to)), "notifications_supervisor")
 
+  val notificationsSupervisor = system.actorOf(Props(new Actor {
     override def receive: Receive = {
-      case _ =>
+      case SendNotification(svc) => sender ! NotificationSent(svc.service)
     }
-  }
-
-  class ForwardingActor(to: ActorRef) extends Actor {
-    override def receive: Receive = {
-      case SendNotification(n) => to.forward(n)
-    }
-  }
-
-  val listener = TestProbe()
-
-  val notificationsSupervisor = system.actorOf(Props(new ParentActor(listener.ref)), "service")
+  }))
 
   "The /notify/opsgenie endpoint" should
     "create and send an OpsGenieNotification" in {
@@ -45,7 +35,7 @@ class NotificationsEndpointSpec extends FlatSpec
       .withEntity("""OH NOES OPSGENIE PLS HALP!""".stripMargin)
 
     request ~> route ~> check {
-      listener.expectMsgType[OpsGenieNotification]
+      response.status.intValue() shouldBe 200
     }
   }
 
@@ -58,7 +48,7 @@ class NotificationsEndpointSpec extends FlatSpec
       .withEntity("""OH NOES SLACK PLS HALP!""".stripMargin)
 
     request ~> route ~> check {
-      listener.expectMsgType[SlackNotification]
+      response.status.intValue() shouldBe 200
     }
   }
 }
