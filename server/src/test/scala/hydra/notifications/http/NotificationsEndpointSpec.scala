@@ -39,7 +39,7 @@ class NotificationsEndpointSpec extends FlatSpec
   "The /notify/opsgenie endpoint" should
     "create and send an OpsGenieNotification" in {
 
-    val route = new NotificationsEndpoint().route
+    val route = new NotificationsEndpoint(notificationsSupervisor).routes
 
     val request = Post("/notify/opsgenie?alias=scary_barry&team=team_awesome&tags=tag1,tag2&entity=da_entity&user=chunky_munkey")
       .withEntity("""OH NOES OPSGENIE PLS HALP!""".stripMargin)
@@ -52,7 +52,7 @@ class NotificationsEndpointSpec extends FlatSpec
   "The /notify/slack endpoint" should
     "create and send a Slack" in {
 
-    val route = new NotificationsEndpoint().route
+    val route = new NotificationsEndpoint(notificationsSupervisor).routes
 
     val request = Post("/notify/slack?channel=test_channel")
       .withEntity("""OH NOES SLACK PLS HALP!""".stripMargin)
