@@ -61,8 +61,14 @@ build.properties
 
 #Logs
 *.log
+*.log.*ndjson
 /api/.idea/
-logs
+!/kafka/src/main/scala/hydra/kafka/endpoints/StreamingTopicsEndpoint.scala
 
-#don't commit your .env.  It normally contains secrets.
+# dot-env
 .env
+
+#ensime http://ensime.github.io/
+.ensime
+.ensime_cache
+

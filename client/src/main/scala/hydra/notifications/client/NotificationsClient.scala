@@ -20,8 +20,6 @@ class NotificationsClient(host: String, port: Int)(implicit sys: ActorSystem) ex
 
   private implicit val ec = sys.dispatcher
 
-  private implicit val materializer = ActorMaterializer()
-
   def postNotification(notification: HydraNotification): Future[NotificationsResponse] = {
     val uri = notification match {
       case s: SlackNotification =>

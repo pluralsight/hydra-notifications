@@ -20,7 +20,6 @@ import java.lang.reflect.Modifier
 import akka.actor.{ActorSystem, Props}
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.RouteConcatenation
-import akka.stream.ActorMaterializer
 import com.typesafe.config.ConfigFactory
 import hydra.notifications.http.{HealthEndpoint, NotificationsEndpoint}
 import hydra.notifications.services.NotificationsSupervisor
@@ -31,8 +30,6 @@ object NotificationsService extends App with RouteConcatenation {
 
 
   implicit val system = ActorSystem()
-
-  implicit val materializer = ActorMaterializer()
 
   private val config = ConfigFactory.load
 

@@ -2,7 +2,7 @@ import sbt.{ExclusionRule, _}
 
 
 object Dependencies {
-  val akkaVersion = "2.5.22"
+  val akkaVersion = "2.6.1"
   val scalaTestVersion = "3.0.1"
   val slf4jVersion = "1.7.29"
   val log4jVersion = "2.7"
@@ -10,7 +10,7 @@ object Dependencies {
   val typesafeConfigVersion = "1.3.1"
   val jodaTimeVersion = "2.9.9"
   val jodaConvertVersion = "1.8.1"
-  val akkaHTTPVersion = "10.1.7"
+  val akkaHTTPVersion = "10.1.11"
   val scalaMockVersion = "3.5.0"
   val serviceContainerVersion = "2.0.7"
   val slackVersion = "0.2.3"
