@@ -43,7 +43,8 @@ object Dependencies {
     val serviceContainer = ("com.github.vonnagy" %% "service-container" % serviceContainerVersion)
       .excludeAll(
         ExclusionRule(organization = "ch.qos.logback"),
-        ExclusionRule(organization = "org.slf4j")
+        ExclusionRule(organization = "org.slf4j"),
+        ExclusionRule(organization = "com.typesafe.akka")
       )
 
     val slack = "com.github.gilbertw1" %% "slack-scala-client" % slackVersion
