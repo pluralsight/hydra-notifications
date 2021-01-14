@@ -32,7 +32,6 @@ object Dependencies {
 
     val akka = Seq("com.typesafe.akka" %% "akka-actor" % akkaVersion,
       "com.typesafe.akka" %% "akka-stream" % akkaVersion,
-      "com.typesafe.akka" %% "akka-cluster" % akkaVersion,
       "com.typesafe.akka" %% "akka-slf4j" % akkaVersion,
       "com.typesafe.akka" %% "akka-http-spray-json" % akkaHTTPVersion,
       "ch.megard" %% "akka-http-cors" % "0.4.2")
@@ -44,7 +43,8 @@ object Dependencies {
     val serviceContainer = ("com.github.vonnagy" %% "service-container" % serviceContainerVersion)
       .excludeAll(
         ExclusionRule(organization = "ch.qos.logback"),
-        ExclusionRule(organization = "org.slf4j")
+        ExclusionRule(organization = "org.slf4j"),
+        ExclusionRule(organization = "com.typesafe.akka")
       )
 
     val slack = "com.github.gilbertw1" %% "slack-scala-client" % slackVersion
