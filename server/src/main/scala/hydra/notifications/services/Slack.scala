@@ -37,9 +37,6 @@ class Slack extends Actor with ActorLogging with HydraNotificationService {
 
   private implicit val system = context.system
 
-  //private implicit val cache = SlackNotificationsActor.channelCache
-
-
   override def receive = {
     case Notify(slack: SlackNotification) =>
       val requestor = sender
@@ -51,14 +48,8 @@ class Slack extends Actor with ActorLogging with HydraNotificationService {
   }
 
   private def getChannel(channelName: String): Future[Channel] = {
-    //caching(channelName) {
-      slackClient.listChannels().map(c => c.find(_.name == channelName))
-        .map { c => c.getOrElse(throw new IllegalArgumentException(s"Slack channel $channelName not found.")) }
-   // }
+    slackClient.listChannels().map(c => c.find(_.name == channelName))
+      .map { c => c.getOrElse(throw new IllegalArgumentException(s"Slack channel $channelName not found.")) }
   }
 
-}
-
-object SlackNotificationsActor {
- // implicit val channelCache = ScalaCache(GuavaCache())
 }

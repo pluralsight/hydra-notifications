@@ -13,7 +13,7 @@ object Dependencies {
   val akkaHTTPVersion = "10.1.11"
   val scalaMockVersion = "3.5.0"
   val serviceContainerVersion = "2.0.7"
-  val slackVersion = "0.2.3"
+  val slackVersion = "0.2.14"
   val jerseyVersion = "1.9.1"
   val scalaCacheVersion = "0.9.3"
   val reflectionsVersion = "0.9.10"
@@ -47,7 +47,7 @@ object Dependencies {
         ExclusionRule(organization = "com.typesafe.akka")
       )
 
-    val slack = "com.github.gilbertw1" %% "slack-scala-client" % slackVersion
+    val slack = "com.github.slack-scala-client" %% "slack-scala-client" % slackVersion
 
     val opsGenie = Seq(
       "com.opsgenie.integration" % "sdk" % "2.11.2",
