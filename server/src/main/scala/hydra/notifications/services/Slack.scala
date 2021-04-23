@@ -40,16 +40,9 @@ class Slack extends Actor with ActorLogging with HydraNotificationService {
   override def receive = {
     case Notify(slack: SlackNotification) =>
       val requestor = sender
-      val response = getChannel(slack.channel)
-        .flatMap { c => slackClient.postChatMessage(c.id, slack.message).map(NotificationSent(_)) }
+      val response = slackClient.postChatMessage(slack.channel, slack.message).map(NotificationSent(_))
         .recover { case e: Exception => NotificationSendError(400, e.getMessage) }
 
       pipe(response) to requestor
   }
-
-  private def getChannel(channelName: String): Future[Channel] = {
-    slackClient.listChannels().map(c => c.find(_.name == channelName))
-      .map { c => c.getOrElse(throw new IllegalArgumentException(s"Slack channel $channelName not found.")) }
-  }
-
 }
