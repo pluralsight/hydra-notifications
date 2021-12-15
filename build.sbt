@@ -9,6 +9,8 @@ val hydraNotificationsVersion = "0.1.0" + buildNumber
 
 val registryUrl = sys.env.getOrElse("DOCKER_REGISTRY_URL", "")
 
+updateOptions := updateOptions.value.withGigahorse(false)
+
 lazy val dockerSettings = Seq(
   buildOptions in docker := BuildOptions(
     cache = false,
