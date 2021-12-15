@@ -4,8 +4,8 @@ import sbt.{ExclusionRule, _}
 object Dependencies {
   val akkaVersion = "2.6.7"
   val scalaTestVersion = "3.0.1"
-  val slf4jVersion = "1.7.29"
-  val log4jVersion = "2.7"
+  val slf4jVersion = "2.16.0"
+  val log4jVersion = "2.16.0"
   val kxbmapConfigVersion = "0.4.4"
   val typesafeConfigVersion = "1.3.1"
   val jodaTimeVersion = "2.9.9"
