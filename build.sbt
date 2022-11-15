@@ -50,6 +50,7 @@ lazy val defaultSettings = Seq(
   scalaVersion := "2.12.3",
   description := "Hydra Notifications API",
   libraryDependencies += "org.scala-lang" % "scala-reflect" % scalaVersion.value,
+  dependencyOverrides += "org.apache.commons" % "commons-lang3" % "3.9",
   excludeDependencies += "org.slf4j" % "slf4j-log4j12",
   excludeDependencies += "log4j" % "log4j",
   packageOptions in(Compile, packageBin) +=
