@@ -46,21 +46,7 @@ package:
     - unzip server/target/universal/*.zip
     - mv hydra-notifications-server-* hydra-notifications-server
     - tar czf ${ARTIFACT_NAME}-${BUILD_VERSION}.tgz --exclude=*.tmp --exclude=*.tgz --exclude=*.tgz.md5 .
-    - echo "##teamcity[publishArtifacts '%env.ARTIFACT_NAME%.tgz']"
-  
-    - ls ingest/target/universal/*.zip | xargs -I {} unzip {} -d ps-publish
-    - mv ps-publish/hydra-ingest*/* ps-publish
-    - rm -rf ps-publish/hydra-ingest*
-    - cd ps-publish/bin
-    - ls -la
-    - curl -O https://download.newrelic.com/newrelic/java-agent/newrelic-agent/4.4.0/newrelic-agent-4.4.0.jar
-    - curl -O https://download.newrelic.com/newrelic/java-agent/newrelic-agent/4.4.0/newrelic.yml
-    - cd ../../
-    - echo $BUILD_VERSION > VERSION
-    - tar czf ${ARTIFACT_NAME}-${BUILD_VERSION}.tgz --exclude=*.tmp --exclude=*.tgz --exclude=*.tgz.md5 VERSION ps-publish/
-    - echo "##teamcity[publishArtifacts '${ARTIFACT_NAME}-${BUILD_VERSION}.tgz']"
-    - md5sum ${ARTIFACT_NAME}-${BUILD_VERSION}.tgz > ${ARTIFACT_NAME}-${BUILD_VERSION}.tgz.md5
-    - echo "${ARTIFACTORY_ARTIFACT_URL}"
+    - echo "##teamcity[publishArtifacts '${ARTIFACT_NAME}.tgz']"
     - |
       curl \
       -H "Authorization: Bearer ${NPM_TOKEN}" \
@@ -71,7 +57,6 @@ package:
     paths:
       - ${ARTIFACT_NAME}-${BUILD_VERSION}.tgz
       - ${ARTIFACT_NAME}-${BUILD_VERSION}.tgz.md5
-
 
 publish:
   stage: publish
