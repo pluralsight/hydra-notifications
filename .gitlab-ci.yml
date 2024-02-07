@@ -1,0 +1,92 @@
+image: openjdk:8
+
+variables:
+  ARTIFACT_NAME: hydra-publish
+  IMAGE_NAME: hydra
+  DOCKER_REGISTRY_URL: harbor.vnerd.com/library
+  DOCKER_REGISTRY_IMAGE: ${DOCKER_REGISTRY_URL}/${IMAGE_NAME}
+  ARTIFACTORY_REPOSITORY_URL: https://repository.vnerd.com/artifactory
+  ARTIFACTORY_REPOSITORY: bounded-context
+  ARTIFACTORY_ID: hydra/publish
+  ARTIFACTORY_ARTIFACT_VERSION: ${ARTIFACT_NAME}-${BUILD_VERSION}.tgz
+  ARTIFACTORY_PATH: ${ARTIFACTORY_ID}/${ARTIFACTORY_ARTIFACT_VERSION}
+  ARTIFACTORY_ARTIFACT_URL: ${ARTIFACTORY_REPOSITORY_URL}/${ARTIFACTORY_REPOSITORY}/${ARTIFACTORY_PATH}
+  BUILD_VERSION: 1.0.${CI_PIPELINE_IID}
+
+  
+before_script:
+  - apt-get update -yqq
+  - apt-get install -yqq apt-transport-https apt-utils
+  - echo "deb https://repo.scala-sbt.org/scalasbt/debian /" | tee -a /etc/apt/sources.list.d/sbt.list
+  - mkdir -p /root/.gnupg
+  - gpg --recv-keys --no-default-keyring --keyring gnupg-ring:/etc/apt/trusted.gpg.d/scalasbt-release.gpg --keyserver hkp://keyserver.ubuntu.com:80 2EE0EA64E40A89B84B2DF73499E82A75642AC823
+  - chmod 644 /etc/apt/trusted.gpg.d/scalasbt-release.gpg
+  - apt-get update -yqq
+  - apt-get install -yqq sbt
+
+stages:
+  - build
+  - package
+  - publish
+  - deploy
+
+build:
+  stage: build
+  script:
+    - sbt clean compile test
+
+package:
+  stage: package
+  script:
+    - sbt universal:packageBin
+    - ls ingest/target/universal/*.zip | xargs -I {} unzip {} -d ps-publish
+    - mv ps-publish/hydra-ingest*/* ps-publish
+    - rm -rf ps-publish/hydra-ingest*
+    - cd ps-publish/bin
+    - ls -la
+    - curl -O https://download.newrelic.com/newrelic/java-agent/newrelic-agent/4.4.0/newrelic-agent-4.4.0.jar
+    - curl -O https://download.newrelic.com/newrelic/java-agent/newrelic-agent/4.4.0/newrelic.yml
+    - cd ../../
+    - echo $BUILD_VERSION > VERSION
+    - tar czf ${ARTIFACT_NAME}-${BUILD_VERSION}.tgz --exclude=*.tmp --exclude=*.tgz --exclude=*.tgz.md5 VERSION ps-publish/
+    - echo "##teamcity[publishArtifacts '${ARTIFACT_NAME}-${BUILD_VERSION}.tgz']"
+    - md5sum ${ARTIFACT_NAME}-${BUILD_VERSION}.tgz > ${ARTIFACT_NAME}-${BUILD_VERSION}.tgz.md5
+    - echo "${ARTIFACTORY_ARTIFACT_URL}"
+    - |
+      curl \
+      -H "Authorization: Bearer ${NPM_TOKEN}" \
+      -X PUT ${ARTIFACTORY_ARTIFACT_URL} \
+      -T ${ARTIFACTORY_ARTIFACT_VERSION}
+
+  artifacts:
+    paths:
+      - ${ARTIFACT_NAME}-${BUILD_VERSION}.tgz
+      - ${ARTIFACT_NAME}-${BUILD_VERSION}.tgz.md5
+      - ps-publish/
+
+publish:
+  stage: publish
+  image: harbor.vnerd.com/proxy/library/docker:cli
+  tags:
+    - ps
+    - docker
+  needs:
+    - package
+  before_script:
+    - echo -n "$DOCKER_REGISTRY_PASSWORD" | docker login -u "$DOCKER_REGISTRY_USERNAME" --password-stdin "$DOCKER_REGISTRY_URL"
+  script:
+    - pwd
+    - ls -lh
+    - docker build -t ${IMAGE_NAME} -f Dockerfile.new .
+    - docker tag ${IMAGE_NAME} ${DOCKER_REGISTRY_IMAGE}:${BUILD_VERSION}
+    - docker push ${DOCKER_REGISTRY_IMAGE}:${BUILD_VERSION}
+    - docker tag ${IMAGE_NAME} ${DOCKER_REGISTRY_IMAGE}:latest
+    - docker push ${DOCKER_REGISTRY_IMAGE}:latest
+    - CURYEAR=$(date +%Y)
+    - CURMONTH=$(date +%-m)
+    - echo -n "${CURYEAR}.${CURMONTH}.${BUILD_VERSION}" > VERSION
+  variables:
+    DOCKER_HOST: tcp://localhost:2376
+    DOCKER_TLS_CERTDIR: "/certs"
+    DOCKER_CERT_PATH: "$DOCKER_TLS_CERTDIR/client"
+    DOCKER_TLS_VERIFY: 1
