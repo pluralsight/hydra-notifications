@@ -1,3 +1,7 @@
+include:
+  - project: 'pluralsight/experience/gitlab-helpers'
+    file: '/salt-deploy/helper.yml'
+
 image: openjdk:8
 
 variables:
