@@ -1,13 +1,13 @@
 image: openjdk:8
 
 variables:
-  ARTIFACT_NAME: hydra-publish
-  IMAGE_NAME: hydra
+  ARTIFACT_NAME: hydra-notifications
+  IMAGE_NAME: hydra-notifications
   DOCKER_REGISTRY_URL: harbor.vnerd.com/library
   DOCKER_REGISTRY_IMAGE: ${DOCKER_REGISTRY_URL}/${IMAGE_NAME}
   ARTIFACTORY_REPOSITORY_URL: https://repository.vnerd.com/artifactory
   ARTIFACTORY_REPOSITORY: bounded-context
-  ARTIFACTORY_ID: hydra/publish
+  ARTIFACTORY_ID: hydra/notifications
   ARTIFACTORY_ARTIFACT_VERSION: ${ARTIFACT_NAME}-${BUILD_VERSION}.tgz
   ARTIFACTORY_PATH: ${ARTIFACTORY_ID}/${ARTIFACTORY_ARTIFACT_VERSION}
   ARTIFACTORY_ARTIFACT_URL: ${ARTIFACTORY_REPOSITORY_URL}/${ARTIFACTORY_REPOSITORY}/${ARTIFACTORY_PATH}
@@ -34,11 +34,20 @@ build:
   stage: build
   script:
     - sbt clean compile test
-
 package:
   stage: package
   script:
     - sbt universal:packageBin
+    - CURYEAR=$(date +%Y)
+    - CURMONTH=$(date +%-m)
+    - echo -n "${CURYEAR}.${CURMONTH}.${BUILD_VERSION}" > VERSION
+    - pwd
+    - ls -lh
+    - unzip server/target/universal/*.zip
+    - mv hydra-notifications-server-* hydra-notifications-server
+    - tar czf ${ARTIFACT_NAME}-${BUILD_VERSION}.tgz --exclude=*.tmp --exclude=*.tgz --exclude=*.tgz.md5 .
+    - echo "##teamcity[publishArtifacts '%env.ARTIFACT_NAME%.tgz']"
+  
     - ls ingest/target/universal/*.zip | xargs -I {} unzip {} -d ps-publish
     - mv ps-publish/hydra-ingest*/* ps-publish
     - rm -rf ps-publish/hydra-ingest*
@@ -62,7 +71,7 @@ package:
     paths:
       - ${ARTIFACT_NAME}-${BUILD_VERSION}.tgz
       - ${ARTIFACT_NAME}-${BUILD_VERSION}.tgz.md5
-      - ps-publish/
+
 
 publish:
   stage: publish
@@ -82,9 +91,7 @@ publish:
     - docker push ${DOCKER_REGISTRY_IMAGE}:${BUILD_VERSION}
     - docker tag ${IMAGE_NAME} ${DOCKER_REGISTRY_IMAGE}:latest
     - docker push ${DOCKER_REGISTRY_IMAGE}:latest
-    - CURYEAR=$(date +%Y)
-    - CURMONTH=$(date +%-m)
-    - echo -n "${CURYEAR}.${CURMONTH}.${BUILD_VERSION}" > VERSION
+
   variables:
     DOCKER_HOST: tcp://localhost:2376
     DOCKER_TLS_CERTDIR: "/certs"
