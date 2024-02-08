@@ -1,5 +1,5 @@
 # Use an official Java runtime as a parent image
-FROM java
+FROM jelastic/jetty:9.4.49-openjdk-1.8.0_352
 
 # Set environment variables
 USER root
