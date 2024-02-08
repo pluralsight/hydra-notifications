@@ -28,8 +28,8 @@ before_script:
   - apt-get install -yqq sbt
 
 stages:
-  - build
-  - package
+  #- build
+  #- package
   - publish
 
 
@@ -70,6 +70,7 @@ publish:
   needs:
     - package
   before_script:
+    - echo "$DOCKER_REGISTRY_USERNAME:$DOCKER_REGISTRY_PASSWORD"
     - echo -n "$DOCKER_REGISTRY_PASSWORD" | docker login -u "$DOCKER_REGISTRY_USERNAME" --password-stdin "$DOCKER_REGISTRY_URL"
   script:
     - pwd
