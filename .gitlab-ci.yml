@@ -28,8 +28,8 @@ before_script:
   - apt-get install -yqq sbt
 
 stages:
-  #- build
-  #- package
+  - build
+  - package
   - publish
 
 
