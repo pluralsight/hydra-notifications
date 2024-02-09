@@ -13,7 +13,7 @@ ARG PORT_NUMBER=8080
 EXPOSE $PORT_NUMBER
 
 # Copy the application files to the container
-COPY . /opt/hydra-notifications-server
+COPY hydra-notifications-server /opt/hydra-notifications-server
 
 # Set the working directory
 WORKDIR /opt/hydra-notifications-server
