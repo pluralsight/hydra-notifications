@@ -36,9 +36,6 @@ build:
   stage: build
   script:
     - sbt clean compile test
-package:
-  stage: package
-  script:
     - sbt universal:packageBin
     - CURYEAR=$(date +%Y)
     - CURMONTH=$(date +%-m)
@@ -50,15 +47,5 @@ package:
     - tar czf ${ARTIFACT_NAME}-${BUILD_VERSION}.tgz --exclude=*.tmp --exclude=*.tgz --exclude=*.tgz.md5 .
     - ls -lh
     - echo "##teamcity[publishArtifacts '${ARTIFACT_NAME}.tgz']"
-    - |
-      curl \
-      -H "Authorization: Bearer ${NPM_TOKEN}" \
-      -X PUT ${ARTIFACTORY_ARTIFACT_URL} \
-      -T ${ARTIFACTORY_ARTIFACT_VERSION}
 
-
-  artifacts:
-    paths:
-      - ${ARTIFACT_NAME}-${BUILD_VERSION}.tgz
-      - /opt/hydra-notifications-server
 
