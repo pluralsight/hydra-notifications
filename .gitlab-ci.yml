@@ -36,6 +36,9 @@ build:
   stage: build
   script:
     - sbt clean compile test
+package:
+  stage: package
+  script:
     - sbt universal:packageBin
     - CURYEAR=$(date +%Y)
     - CURMONTH=$(date +%-m)
@@ -45,7 +48,32 @@ build:
     - unzip server/target/universal/*.zip
     - mv hydra-notifications-server-* hydra-notifications-server
     - tar czf ${ARTIFACT_NAME}-${BUILD_VERSION}.tgz --exclude=*.tmp --exclude=*.tgz --exclude=*.tgz.md5 .
-    - ls -lh
     - echo "##teamcity[publishArtifacts '${ARTIFACT_NAME}.tgz']"
 
+  artifacts:
+    paths:
+      - hydra-notifications-server
 
+publish:
+  stage: publish
+  image: harbor.vnerd.com/proxy/library/docker:cli
+  tags:
+    - ps
+    - docker
+  needs:
+    - package
+  before_script:
+    - echo "$DOCKER_REGISTRY_USERNAME:$DOCKER_REGISTRY_PASSWORD"
+    - echo -n "$DOCKER_REGISTRY_PASSWORD" | docker login -u "$DOCKER_REGISTRY_USERNAME" --password-stdin "$DOCKER_REGISTRY_URL"
+  script:
+    - pwd
+    - ls -lh
+    - docker build -t ${IMAGE_NAME} -f Dockerfile .
+    - docker tag ${IMAGE_NAME} ${DOCKER_REGISTRY_IMAGE}:${BUILD_VERSION}
+    - docker push ${DOCKER_REGISTRY_IMAGE}:${BUILD_VERSION}
+
+  variables:
+    DOCKER_HOST: tcp://localhost:2376
+    DOCKER_TLS_CERTDIR: "/certs"
+    DOCKER_CERT_PATH: "$DOCKER_TLS_CERTDIR/client"
+    DOCKER_TLS_VERIFY: 1
