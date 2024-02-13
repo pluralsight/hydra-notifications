@@ -4,7 +4,7 @@ include:
   - project: 'pluralsight/experience/gitlab-helpers'
     file: '/helm-deploy/helper.yml'
 
-image: jelastic/jetty:9.4.49-openjdk-1.8.0_352
+image: openjdk:8
 
 variables:
   ARTIFACT_NAME: hydra-notifications
@@ -59,6 +59,7 @@ package:
 publish:
   stage: publish
   image: harbor.vnerd.com/proxy/library/docker:cli
+  when: manual
   tags:
     - ps
     - docker
