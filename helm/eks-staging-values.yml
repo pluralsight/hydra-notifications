@@ -1,0 +1,54 @@
+image:
+  repository: harbor.vnerd.com/library/dvs-data-explorer
+  pullPolicy: Always
+  tag: latest
+
+deployment:
+  apiVersion: "apps/v1"
+  updateStrategy:
+    rollingUpdate:
+      maxUnavailable: 0
+    type: RollingUpdate
+
+replicas: 2
+
+#Adding velero backup for k8s services
+#velero.io/exclude-from-backup" = true 
+service:
+  type: ClusterIP
+  port: 80
+  annotations: {}
+  labels: {}
+
+ingress:
+  enabled: true
+  ingressClassName: alb
+  labels: {}
+  hosts:
+    - dvs.eplur-staging.vnerd.com
+    - dvs-staging.vnerd.com
+  tls:
+    - hosts:
+        - dvs.eplur-staging.vnerd.com
+  path: /
+
+
+resources:
+  limits:
+    memory: 512Mi
+  requests:
+    cpu: 250m
+    memory: 50Mi
+
+tolerations: []
+
+nodeSelector: {}
+
+config:
+  NODE_ENV: production
+  INGEST_URL: https://hydra-publish.eplur-staging.vnerd.com
+  PUBLIC_URL: https://dvs.eplur-staging.vnerd.com/dvs-data-explorer
+  REACT_APP_INGEST_URL: https://hydra-publish.eplur-staging.vnerd.com
+  REACT_APP_STREAMS_URL: https://hydra-streams.eplur-staging.vnerd.com
+  STREAMS_URL: https://hydra-streams.eplur-staging.vnerd.com
+
