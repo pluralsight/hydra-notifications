@@ -1,8 +1,10 @@
 include:
   - project: 'pluralsight/experience/gitlab-helpers'
     file: '/salt-deploy/helper.yml'
+  - project: 'pluralsight/experience/gitlab-helpers'
+    file: '/helm-deploy/helper.yml'
 
-image: openjdk:8
+image: jelastic/jetty:9.4.49-openjdk-1.8.0_352
 
 variables:
   ARTIFACT_NAME: hydra-notifications
