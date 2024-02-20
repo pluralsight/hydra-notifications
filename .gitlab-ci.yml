@@ -89,6 +89,9 @@ deploy-dev:
     environment:
       name: staging
     when: manual
+    tags:
+      - ps
+      - docker
     variables:
       HELM_CHART_NAME: dvs-data-explorer
       HELM_DEPLOY_TOKEN: ${HELM_DEPLOY_TOKEN}
