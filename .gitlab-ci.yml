@@ -85,7 +85,6 @@ publish:
 
 deploy-dev:
     stage: deploy-dev
-    needs: ["dvs-data-explorer:build"]
     extends: .helmDeploy
     environment:
       name: staging
@@ -100,7 +99,4 @@ deploy-dev:
       HELM_VALUES_FILE: helm/eks-dev-values.yaml
     before_script:
       - kubectl config set-cluster app-$CI_ENVIRONMENT_NAME --server=$HELM_K8S_CLUSTER_URL --embed-certs --certificate-authority=$HELM_K8S_CLUSTER_CACERT
-      
-
-
 
