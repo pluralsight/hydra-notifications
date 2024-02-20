@@ -35,6 +35,7 @@ stages:
   - build
   - package
   - publish
+  - deploy-dev
 
 build:
   stage: build
@@ -82,7 +83,7 @@ publish:
     DOCKER_CERT_PATH: "$DOCKER_TLS_CERTDIR/client"
     DOCKER_TLS_VERIFY: 1
 
-EKS dvs-data-explorer:dev-deploy:
+deploy-dev:
     stage: deploy-dev
     needs: ["dvs-data-explorer:build"]
     extends: .helmDeploy
