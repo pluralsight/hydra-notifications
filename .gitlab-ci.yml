@@ -18,6 +18,8 @@ variables:
   ARTIFACTORY_PATH: ${ARTIFACTORY_ID}/${ARTIFACTORY_ARTIFACT_VERSION}
   ARTIFACTORY_ARTIFACT_URL: ${ARTIFACTORY_REPOSITORY_URL}/${ARTIFACTORY_REPOSITORY}/${ARTIFACTORY_PATH}
   BUILD_VERSION: 1.0.${CI_PIPELINE_IID}
+  BOUNDED_CONTEXT: adapt-dvs
+
 
 before_script:
   - apt-get update -yqq
@@ -74,9 +76,30 @@ publish:
     - docker build -t ${IMAGE_NAME} -f Dockerfile .
     - docker tag ${IMAGE_NAME} ${DOCKER_REGISTRY_IMAGE}:${BUILD_VERSION}
     - docker push ${DOCKER_REGISTRY_IMAGE}:${BUILD_VERSION}
-
   variables:
     DOCKER_HOST: tcp://localhost:2376
     DOCKER_TLS_CERTDIR: "/certs"
     DOCKER_CERT_PATH: "$DOCKER_TLS_CERTDIR/client"
     DOCKER_TLS_VERIFY: 1
+
+EKS dvs-data-explorer:dev-deploy:
+    stage: deploy-dev
+    needs: ["dvs-data-explorer:build"]
+    extends: .helmDeploy
+    environment:
+      name: staging
+    when: manual
+    variables:
+      HELM_CHART_NAME: dvs-data-explorer
+      HELM_DEPLOY_TOKEN: ${HELM_DEPLOY_TOKEN}
+      HELM_K8S_CLUSTER_CACERT: ${HELM_K8S_CLUSTER_CACERT}
+      HELM_K8S_CLUSTER_URL: https://6C29C0073BB19BEF220B9437E6962AF2.gr7.us-west-2.eks.amazonaws.com
+      HELM_TARGET_NAMESPACE: ${BOUNDED_CONTEXT}
+      APPLICATION_ROLE: ui
+      HELM_VALUES_FILE: helm/eks-dev-values.yaml
+    before_script:
+      - kubectl config set-cluster app-$CI_ENVIRONMENT_NAME --server=$HELM_K8S_CLUSTER_URL --embed-certs --certificate-authority=$HELM_K8S_CLUSTER_CACERT
+      
+
+
+
