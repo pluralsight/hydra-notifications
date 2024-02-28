@@ -10,7 +10,7 @@ deployment:
       maxUnavailable: 0
     type: RollingUpdate
 
-replicas: 2
+replicas: 1
 
 service:
   type: ClusterIP
