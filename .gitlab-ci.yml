@@ -96,6 +96,9 @@ publish:
 
 .notify-all:
   image: harbor.vnerd.com/library/ps-helm:latest
+   tags:
+    - ps
+    - docker 
   script:
     - ps-notify slack "$SLACK_MESSAGE" "$SLACK_CHANNEL"  --slack-username $SLACK_USERNAME --slack-icon-emoji $SLACK_ICON_EMOJI
   variables:
