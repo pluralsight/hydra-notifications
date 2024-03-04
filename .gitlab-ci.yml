@@ -1,6 +1,6 @@
 include:
   - project: 'pluralsight/experience/gitlab-helpers'
-    file: '/salt-deploy/helper.yml'
+    file: '/slack-notification/helper.yml'
   - project: 'pluralsight/experience/gitlab-helpers'
     file: '/helm-deploy/helper.yml'
 
@@ -23,6 +23,14 @@ variables:
   K8S_CLUSTER_NAME: app-eks.eplur-staging.us-west-2
   ENV: ${CI_JOB_STAGE} 
 
+  SLACK_ICON_EMOJI: ":eagle:"
+  SLACK_CHANNEL: '#data-ops-alerts'
+  SLACK_MESSAGE: |
+    *[[SERVICE_NAME]]* deployed to *[[ENV]]*.
+    Version: *[[BUILD_VERSION]]*
+    [[PIPELINE_LINK]]
+  SLACK_USERNAME: '${GITLAB_USER_NAME}'
+
 
 before_script:
   - apt-get update -yqq
@@ -44,6 +52,7 @@ build:
   stage: build
   script:
     - sbt clean compile test
+
 package:
   stage: package
   script:
@@ -65,7 +74,6 @@ package:
 publish:
   stage: publish
   image: harbor.vnerd.com/proxy/library/docker:cli
-  when: manual
   tags:
     - ps
     - docker
@@ -86,12 +94,20 @@ publish:
     DOCKER_CERT_PATH: "$DOCKER_TLS_CERTDIR/client"
     DOCKER_TLS_VERIFY: 1
 
+.notify-all:
+  image: harbor.vnerd.com/library/ps-helm:latest
+  script:
+    - ps-notify slack "$SLACK_MESSAGE" "$SLACK_CHANNEL"  --slack-username $SLACK_USERNAME --slack-icon-emoji $SLACK_ICON_EMOJI
+  variables:
+    NODE_ENV: $ENV
+  <<: *br-only
+
+
 deploy-dev:
     stage: deploy-dev
     extends: .helmDeploy
     environment:
       name: staging
-    when: manual
     variables:
       HELM_CHART_NAME: ps-service
       HELM_DEPLOY_TOKEN: ${HELM_DEPLOY_TOKEN}
@@ -107,4 +123,13 @@ deploy-dev:
       - kubectl config set-credentials deploy --token=`echo ${HELM_DEPLOY_TOKEN} | base64 -d`
       - kubectl config set-context deploy --cluster=app-${CI_ENVIRONMENT_NAME%/*} --namespace=${HELM_TARGET_NAMESPACE} --user=deploy
       - kubectl config use-context deploy
+
+app:dev:slack-notify:
+  stage: deploy-dev
+  extends: .notify-all
+  variables:
+    NODE_ENV: DEV
+  needs: ["deploy-dev"]
+
+
 
