@@ -126,10 +126,15 @@ deploy-dev:
       - kubectl config set-context deploy --cluster=app-${CI_ENVIRONMENT_NAME%/*} --namespace=${HELM_TARGET_NAMESPACE} --user=deploy
       - kubectl config use-context deploy
 
-slack-notify:
-  stage: notify
-  extends: .notify-all
+slack:dev:
+  extends: .slackNotification
+  environment:
+    name: staging
   variables:
-    NODE_ENV: "DEV"
-  needs:
-    - deploy-dev
+    APPLICATION_ROLE: paas-api
+    SLACK_CHANNELS: '#data-ops-alerts'
+   # SLACK_WEBHOOK_URL: ${SLACK_WEBHOOK_URL}
+    SLACK_ICON: happy
+    BUILD_USERNAME: '${GITLAB_USER_NAME}'
+  when: on_success
+  needs: ['deploy-dev']
