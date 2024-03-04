@@ -97,7 +97,7 @@ publish:
 
 .notify-all:
   image: harbor.vnerd.com/library/ps-helm:latest
-   tags:
+  tags:
     - ps
     - docker 
   script:
