@@ -129,24 +129,9 @@ deploy-dev:
       - kubectl config set-context deploy --cluster=app-${CI_ENVIRONMENT_NAME%/*} --namespace=${HELM_TARGET_NAMESPACE} --user=deploy
       - kubectl config use-context deploy
 
-app:staging:newrelic-notify:
+slack:dev:
   stage: notify_test
   extends: .notify-all
-  when: on_success
-  needs: ['deploy-dev']
-  before_script:
-    - echo "Sending notification to slack"
-
-slack:dev:
-  extends: .slackNotification
-  environment:
-    name: staging
-  variables:
-    APPLICATION_ROLE: paas-api
-    SLACK_CHANNELS: '#data-ops-alerts'
-   # SLACK_WEBHOOK_URL: ${SLACK_WEBHOOK_URL}
-    SLACK_ICON: happy
-    BUILD_USERNAME: '${GITLAB_USER_NAME}'
   when: on_success
   needs: ['deploy-dev']
   before_script:
