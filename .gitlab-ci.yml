@@ -48,6 +48,7 @@ stages:
   - publish
   - deploy-dev
   - notify
+  - notify_test
 
 build:
   stage: build
@@ -105,6 +106,8 @@ publish:
   variables:
     NODE_ENV: $ENV
 
+
+
 deploy-dev:
     stage: deploy-dev
     extends: .helmDeploy
@@ -125,6 +128,14 @@ deploy-dev:
       - kubectl config set-credentials deploy --token=`echo ${HELM_DEPLOY_TOKEN} | base64 -d`
       - kubectl config set-context deploy --cluster=app-${CI_ENVIRONMENT_NAME%/*} --namespace=${HELM_TARGET_NAMESPACE} --user=deploy
       - kubectl config use-context deploy
+
+app:staging:newrelic-notify:
+  stage: notify_test
+  extends: .notify-all
+  when: on_success
+  needs: ['deploy-dev']
+  before_script:
+    - echo "Sending notification to slack"
 
 slack:dev:
   extends: .slackNotification
