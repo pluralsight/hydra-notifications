@@ -138,3 +138,5 @@ slack:dev:
     BUILD_USERNAME: '${GITLAB_USER_NAME}'
   when: on_success
   needs: ['deploy-dev']
+  before_script:
+    - echo "Sending notification to slack"
