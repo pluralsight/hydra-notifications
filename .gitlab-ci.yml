@@ -22,6 +22,7 @@ variables:
   HELM_K8S_CLUSTER_URL: https://6C29C0073BB19BEF220B9437E6962AF2.gr7.us-west-2.eks.amazonaws.com
   K8S_CLUSTER_NAME: app-eks.eplur-staging.us-west-2
   ENV: ${CI_JOB_STAGE} 
+  SERVICE_NAME: "dev-hydra-notifications"
   SLACK_ICON_EMOJI: ":gitlab:"
   SLACK_CHANNEL: '#data-ops-alerts'
   SLACK_MESSAGE: |
@@ -29,7 +30,6 @@ variables:
     Version: *[[BUILD_VERSION]]*
     [[PIPELINE_LINK]]
   SLACK_USERNAME: '${GITLAB_USER_NAME}'
-
 
 before_script:
   - apt-get update -yqq
