@@ -29,7 +29,7 @@ variables:
     *[[SERVICE_NAME]]* deployed to *[[ENV]]*.
     Version: *[[BUILD_VERSION]]*
     [[PIPELINE_LINK]]
-  SLACK_USERNAME: '${GITLAB_USER_NAME}'
+  SLACK_USERNAME: 'GITLAB'
 
 before_script:
   - apt-get update -yqq
