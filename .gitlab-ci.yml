@@ -24,7 +24,7 @@ variables:
   ENV: ${CI_JOB_STAGE} 
   SERVICE_NAME: "dev-hydra-notifications"
   SLACK_ICON_EMOJI: ":gitlab:"
-  SLACK_CHANNEL: '#data-ops-alerts'
+  SLACK_CHANNEL: '#data-platform-alerts'
   SLACK_MESSAGE: |
     *[[SERVICE_NAME]]* deployed to *[[ENV]]*.
     Version: *[[BUILD_VERSION]]*
