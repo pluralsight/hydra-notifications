@@ -150,7 +150,7 @@ deploy-staging:
       HELM_DEPLOY_TOKEN: ${HELM_DEPLOY_TOKEN}
       K8S_CLUSTER_NAME: app-eks.eplur-staging.us-west-2
       HELM_K8S_CLUSTER_URL: https://6C29C0073BB19BEF220B9437E6962AF2.gr7.us-west-2.eks.amazonaws.com
-      HELM_TARGET_NAMESPACE: "data-platform"
+      HELM_TARGET_NAMESPACE: ${BOUNDED_CONTEXT}
       APPLICATION_ROLE: is-hydra-notifications
       HELM_VALUES_FILE: helm/eks-staging-values.yml
       HELM_SET_VALUES: "NODE_ENV=production, INGEST_URL=https://hydra-publish.eplur-staging.vnerd.com, PUBLIC_URL=https://dvs.eplur-staging.vnerd.com/dvs-data-explorer, REACT_APP_INGEST_URL=https://hydra-publish.eplur-staging.vnerd.com, REACT_APP_STREAMS_URL=https://hydra-streams.eplur-staging.vnerd.com, STREAMS_URL=https://hydra-streams.eplur-staging.vnerd.com"
