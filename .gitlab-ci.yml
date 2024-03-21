@@ -170,3 +170,4 @@ slack:staging:
     - echo "Sending notification to slack"
   variables:
     ENV: "STAGING Cluster"
+    SERVICE_NAME: "is-hydra-notifications"
