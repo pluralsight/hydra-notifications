@@ -20,7 +20,7 @@ service:
 
 ingress:
   enabled: true
-  ingressClassName: alb
+  ingressClassName: internal
   labels: {}
   hosts:
     - hydra-notifications.eplur-staging.vnerd.com
