@@ -29,6 +29,7 @@ ingress:
     - hosts:
         - dvs.eplur-production.vnerd.com
   path: /
+  pathType: Prefix
 
 
 resources:

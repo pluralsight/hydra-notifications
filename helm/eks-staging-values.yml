@@ -26,6 +26,7 @@ ingress:
     - hydra-notifications.eplur-staging.vnerd.com
     - hydra-notifications-stage.vnerd.com
   path: /
+  pathType: Prefix
 
 
 hpa:
