@@ -49,8 +49,8 @@ stages:
   - notify
   - notify_dev
   - deploy-staging
-  - notify-staging
-  
+  - notify_staging
+
 
 build:
   stage: build
