@@ -1,0 +1,173 @@
+include:
+  - project: 'pluralsight/experience/gitlab-helpers'
+    file: '/slack-notification/helper.yml'
+  - project: 'pluralsight/experience/gitlab-helpers'
+    file: '/helm-deploy/helper.yml'
+
+image: openjdk:8
+
+variables:
+  ARTIFACT_NAME: hydra-notifications
+  IMAGE_NAME: hydra-notifications
+  DOCKER_REGISTRY_URL: harbor.vnerd.com/library
+  DOCKER_REGISTRY_IMAGE: ${DOCKER_REGISTRY_URL}/${IMAGE_NAME}
+  ARTIFACTORY_REPOSITORY_URL: https://repository.vnerd.com/artifactory
+  ARTIFACTORY_REPOSITORY: bounded-context
+  ARTIFACTORY_ID: hydra/notifications
+  ARTIFACTORY_ARTIFACT_VERSION: ${ARTIFACT_NAME}-${BUILD_VERSION}.tgz
+  ARTIFACTORY_PATH: ${ARTIFACTORY_ID}/${ARTIFACTORY_ARTIFACT_VERSION}
+  ARTIFACTORY_ARTIFACT_URL: ${ARTIFACTORY_REPOSITORY_URL}/${ARTIFACTORY_REPOSITORY}/${ARTIFACTORY_PATH}
+  BUILD_VERSION: 1.0.${CI_PIPELINE_IID}
+  BOUNDED_CONTEXT: adapt-dvs
+  HELM_K8S_CLUSTER_URL: https://6C29C0073BB19BEF220B9437E6962AF2.gr7.us-west-2.eks.amazonaws.com
+  K8S_CLUSTER_NAME: app-eks.eplur-staging.us-west-2
+  ENV: ${CI_JOB_STAGE} 
+  SERVICE_NAME: "dev-hydra-notifications"
+  SLACK_ICON_EMOJI: ":gitlab:"
+  SLACK_CHANNEL: '#data-platform-alerts'
+  SLACK_MESSAGE: |
+    *[[SERVICE_NAME]]* deployed to *[[ENV]]*.
+    Version: *[[BUILD_VERSION]]*
+    [[PIPELINE_LINK]]
+  SLACK_USERNAME: 'GITLAB'
+
+before_script:
+  - apt-get update -yqq
+  - apt-get install -yqq apt-transport-https apt-utils
+  - echo "deb https://repo.scala-sbt.org/scalasbt/debian /" | tee -a /etc/apt/sources.list.d/sbt.list
+  - mkdir -p /root/.gnupg
+  - gpg --recv-keys --no-default-keyring --keyring gnupg-ring:/etc/apt/trusted.gpg.d/scalasbt-release.gpg --keyserver hkp://keyserver.ubuntu.com:80 2EE0EA64E40A89B84B2DF73499E82A75642AC823
+  - chmod 644 /etc/apt/trusted.gpg.d/scalasbt-release.gpg
+  - apt-get update -yqq
+  - apt-get install -yqq sbt
+
+stages:
+  - build
+  - package
+  - publish
+  - deploy-dev
+  - notify
+  - notify_dev
+  - deploy-staging
+  - notify_staging
+
+
+build:
+  stage: build
+  script:
+    - sbt clean compile test
+
+package:
+  stage: package
+  script:
+    - sbt universal:packageBin
+    - CURYEAR=$(date +%Y)
+    - CURMONTH=$(date +%-m)
+    - echo -n "${CURYEAR}.${CURMONTH}.${BUILD_VERSION}" > VERSION
+    - pwd
+    - ls -lh
+    - unzip server/target/universal/*.zip
+    - mv hydra-notifications-server-* hydra-notifications-server
+    - tar czf ${ARTIFACT_NAME}-${BUILD_VERSION}.tgz --exclude=*.tmp --exclude=*.tgz --exclude=*.tgz.md5 .
+    - echo "##teamcity[publishArtifacts '${ARTIFACT_NAME}.tgz']"
+
+  artifacts:
+    paths:
+      - hydra-notifications-server
+
+publish:
+  stage: publish
+  image: harbor.vnerd.com/proxy/library/docker:cli
+  tags:
+    - ps
+    - docker
+  needs:
+    - package
+  before_script:
+    - echo "$DOCKER_REGISTRY_USERNAME:$DOCKER_REGISTRY_PASSWORD"
+    - echo -n "$DOCKER_REGISTRY_PASSWORD" | docker login -u "$DOCKER_REGISTRY_USERNAME" --password-stdin "$DOCKER_REGISTRY_URL"
+  script:
+    - pwd
+    - ls -lh
+    - docker build -t ${IMAGE_NAME} -f Dockerfile .
+    - docker tag ${IMAGE_NAME} ${DOCKER_REGISTRY_IMAGE}:${BUILD_VERSION}
+    - docker push ${DOCKER_REGISTRY_IMAGE}:${BUILD_VERSION}
+  variables:
+    DOCKER_HOST: tcp://localhost:2376
+    DOCKER_TLS_CERTDIR: "/certs"
+    DOCKER_CERT_PATH: "$DOCKER_TLS_CERTDIR/client"
+    DOCKER_TLS_VERIFY: 1
+
+.notify-all:
+  image: harbor.vnerd.com/library/ps-helm:latest
+  tags:
+    - ps
+    - docker 
+  script:
+    - ps-notify slack "$SLACK_MESSAGE" "$SLACK_CHANNEL"  --slack-username $SLACK_USERNAME --slack-icon-emoji $SLACK_ICON_EMOJI
+  variables:
+    NODE_ENV: $ENV
+
+deploy-dev:
+    stage: deploy-dev
+    extends: .helmDeploy
+    environment:
+      name: staging
+    variables:
+      HELM_CHART_NAME: ps-service
+      HELM_DEPLOY_TOKEN: ${HELM_DEPLOY_TOKEN}
+      K8S_CLUSTER_NAME: app-eks.eplur-staging.us-west-2
+      HELM_K8S_CLUSTER_URL: https://6C29C0073BB19BEF220B9437E6962AF2.gr7.us-west-2.eks.amazonaws.com
+      HELM_TARGET_NAMESPACE: ${BOUNDED_CONTEXT}
+      APPLICATION_ROLE: dev-hydra-notifications
+      HELM_VALUES_FILE: helm/eks-dev-values.yml
+      HELM_SET_VALUES: "NODE_ENV=production, INGEST_URL=https://dev-hydra.eplur-staging.vnerd.com, PUBLIC_URL=https://dvs-dev.eplur-staging.vnerd.com/dvs-data-explorer, REACT_APP_INGEST_URL=https://dev-hydra.eplur-staging.vnerd.com, REACT_APP_STREAMS_URL=https://hydra-streams-dev.eplur-staging.vnerd.com, STREAMS_URL=https://hydra-streams-dev.eplur-staging.vnerd.com"
+    before_script:
+      - export BUILD_VERSION="$(date +%Y).$(date +%m).$(date +%d).${CI_COMMIT_SHORT_SHA}"
+      - kubectl config set-cluster app-${CI_ENVIRONMENT_NAME%/*} --server=${HELM_K8S_CLUSTER_URL} --embed-certs --certificate-authority="$HELM_K8S_CLUSTER_CACERT"
+      - kubectl config set-credentials deploy --token=`echo ${HELM_DEPLOY_TOKEN} | base64 -d`
+      - kubectl config set-context deploy --cluster=app-${CI_ENVIRONMENT_NAME%/*} --namespace=${HELM_TARGET_NAMESPACE} --user=deploy
+      - kubectl config use-context deploy
+
+slack:dev:
+  stage: notify_dev
+  extends: .notify-all
+  when: on_success
+  needs: ['deploy-dev']
+  before_script:
+    - echo "Sending notification to slack"
+  variables:
+    ENV: "DEV Cluster"
+
+deploy-staging:
+    stage: deploy-staging
+    extends: .helmDeploy
+    when: manual
+    environment:
+      name: staging
+    variables:
+      HELM_CHART_NAME: ps-service
+      HELM_DEPLOY_TOKEN: ${HELM_DEPLOY_TOKEN}
+      K8S_CLUSTER_NAME: app-eks.eplur-staging.us-west-2
+      HELM_K8S_CLUSTER_URL: https://6C29C0073BB19BEF220B9437E6962AF2.gr7.us-west-2.eks.amazonaws.com
+      HELM_TARGET_NAMESPACE: ${BOUNDED_CONTEXT}
+      APPLICATION_ROLE: is-hydra-notifications
+      HELM_VALUES_FILE: helm/eks-staging-values.yml
+      HELM_SET_VALUES: "NODE_ENV=production, INGEST_URL=https://hydra-publish.eplur-staging.vnerd.com, PUBLIC_URL=https://dvs.eplur-staging.vnerd.com/dvs-data-explorer, REACT_APP_INGEST_URL=https://hydra-publish.eplur-staging.vnerd.com, REACT_APP_STREAMS_URL=https://hydra-streams.eplur-staging.vnerd.com, STREAMS_URL=https://hydra-streams.eplur-staging.vnerd.com"
+    before_script:
+      - export BUILD_VERSION="$(date +%Y).$(date +%m).$(date +%d).${CI_COMMIT_SHORT_SHA}"
+      - kubectl config set-cluster app-${CI_ENVIRONMENT_NAME%/*} --server=${HELM_K8S_CLUSTER_URL} --embed-certs --certificate-authority="$HELM_K8S_CLUSTER_CACERT"
+      - kubectl config set-credentials deploy --token=`echo ${HELM_DEPLOY_TOKEN} | base64 -d`
+      - kubectl config set-context deploy --cluster=app-${CI_ENVIRONMENT_NAME%/*} --namespace=${HELM_TARGET_NAMESPACE} --user=deploy
+      - kubectl config use-context deploy
+
+slack:staging:
+  stage: notify_staging
+  extends: .notify-all
+  when: on_success
+  needs: ['deploy-staging']
+  before_script:
+    - echo "Sending notification to slack"
+  variables:
+    ENV: "STAGING Cluster"
+    SERVICE_NAME: "is-hydra-notifications"
