@@ -3,6 +3,11 @@ image:
   pullPolicy: Always
   tag: latest
 
+serviceAccount:
+  create: true
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::523344010929:role/is-aws-msk-is-hydra-streams-us-west-2
+
 deployment:
   apiVersion: "apps/v1"
   updateStrategy:
