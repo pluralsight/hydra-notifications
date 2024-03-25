@@ -3,6 +3,11 @@ image:
   pullPolicy: Always
   tag: latest
 
+serviceAccount:
+  create: true
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::523344010929:role/is-aws-msk-is-hydra-streams-us-west-2
+
 deployment:
   apiVersion: "apps/v1"
   updateStrategy:
@@ -53,8 +58,8 @@ config:
   LOG_DIR: /var/log/hydra-notifications
   LOG_LEVEL: ERROR
   PORT_NUMBER: 8080
-  SLACK_TOKEN: xoxp-2345022201-286493579810-550147647603-73094781a9bc0e8dc2ecaad62c19ea0b
-  OPSGENIE_TOKEN: e171c410-5cc6-4786-b962-90b923715996
-  STREAMS_URL: https://dev-hydra-streams.eplur-staging.vnerd.com
+  SLACK_TOKEN: 
+  OPSGENIE_TOKEN: 
+  STREAMS_URL: https://hydra-streams-dev.eplur-staging.vnerd.com
 
 
