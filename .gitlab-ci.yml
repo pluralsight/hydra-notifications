@@ -111,7 +111,7 @@ deploy-dev:
     stage: deploy-dev
     extends: .helmDeploy
     environment:
-      name: staging
+      name: dev
     variables:
       HELM_CHART_NAME: ps-service
       HELM_DEPLOY_TOKEN: ${HELM_DEPLOY_TOKEN}
