@@ -89,7 +89,7 @@ snyk-code-analysis:
       snyk config set api=${SNYK_API_TOKEN}
       snyk config set org=${SNYK_ORG_ID}
       echo "--> Iniciating SNYK Code Analysis"
-      snyk code test --report --project-id="cdafcbb5-24d1-4afc-bcda-96055113fc57" --commit-id="${CI_COMMIT_SHA}"
+      snyk code test --report 
   artifacts:
     when: always
     paths:
