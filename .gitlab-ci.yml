@@ -69,7 +69,6 @@ package:
     - mv hydra-notifications-server-* hydra-notifications-server
     - tar czf ${ARTIFACT_NAME}-${BUILD_VERSION}.tgz --exclude=*.tmp --exclude=*.tgz --exclude=*.tgz.md5 .
     - echo "##teamcity[publishArtifacts '${ARTIFACT_NAME}.tgz']"
-
   artifacts:
     paths:
       - hydra-notifications-server
