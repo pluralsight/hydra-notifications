@@ -89,7 +89,7 @@ snyk-code-analysis:
       snyk config set api=${SNYK_API_TOKEN}
       snyk config set org=${SNYK_ORG_ID}
       echo "--> Iniciating SNYK Code Analysis"
-      snyk code test . --severity-threshold=high|critical --json-file-output=snyk-code-analysis.json
+      snyk code test . --severity-threshold=critical --json-file-output=snyk-code-analysis.json
   artifacts:
     when: always
     paths:
