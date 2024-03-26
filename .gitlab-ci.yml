@@ -46,8 +46,8 @@ before_script:
 
 stages:
   - build
-  - package
   - code-analysis
+  - package
   - publish
   - deploy-dev
   - notify
@@ -89,7 +89,7 @@ snyk-code-analysis:
       snyk config set api=${SNYK_API_TOKEN}
       snyk config set org=${SNYK_ORG_ID}
       echo "--> Iniciating SNYK Code Analysis"
-      snyk code test --report 
+      snyk code test . --severity-threshold=high,critical --json-file-output=snyk-code-analysis.json
   artifacts:
     when: always
     paths:
