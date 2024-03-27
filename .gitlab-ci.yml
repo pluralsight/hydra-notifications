@@ -113,6 +113,8 @@ snyk-code-analysis-notify:
   image: harbor.vnerd.com/library/ps-helm:latest
   stage: code-analysis
   allow_failure: true  
+  needs:
+    - snyk-code-analysis
   tags:
     - ps
     - docker 
