@@ -156,7 +156,7 @@ publish:
     - docker build -t ${IMAGE_NAME} -f Dockerfile .
     - docker tag ${IMAGE_NAME} ${DOCKER_REGISTRY_IMAGE}:${BUILD_VERSION}
     - docker push ${DOCKER_REGISTRY_IMAGE}:${BUILD_VERSION}
-    - snyk container test ${DOCKER_REGISTRY_IMAGE}:${BUILD_VERSION} --file=${CI_PROJECT_DIR}\Dockerfile
+    - snyk container test ${DOCKER_REGISTRY_IMAGE}:${BUILD_VERSION} --file=${CI_PROJECT_DIR}/Dockerfile
   variables:
     DOCKER_HOST: tcp://localhost:2376
     DOCKER_TLS_CERTDIR: "/certs"
