@@ -93,12 +93,13 @@ snyk-code-analysis:
         snyk config set api=${SNYK_API_TOKEN}
         snyk config set org=${SNYK_ORG_ID}
         echo "--> Iniciating SNYK Code Analysis"
-        snyk code test --project-id="${SNYK_PROJECT_ID}" --severity-threshold=high --json-file-output=snyk-code-analysis.json
+        snyk code test --project-id="${SNYK_PROJECT_ID}" --severity-threshold=medium --json-file-output=snyk-code-analysis.json
+        ls -lrt
       fi
   artifacts:
     when: always
     paths:
-      - ./snyk-code-analysis.json
+      - snyk-code-analysis.json
       
 
 publish:
