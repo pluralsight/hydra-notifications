@@ -93,8 +93,9 @@ snyk-code-analysis:
         snyk config set api=${SNYK_API_TOKEN}
         snyk config set org=${SNYK_ORG_ID}
         echo "--> Iniciating SNYK Code Analysis"
-        snyk code test --project-id="${SNYK_PROJECT_ID}" --json  --all-sub-projects  > snyk-code-analysis.json
+        snyk code test --project-id="${SNYK_PROJECT_ID}" --json  --all-sub-projects --project-id="${SNYK_PROJECT_ID}" > snyk-code-analysis.json
         content=$(cat snyk-code-analysis.json)
+        echo $content
       fi
   artifacts:
     when: always
@@ -118,7 +119,6 @@ publish:
     - docker build -t ${IMAGE_NAME} -f Dockerfile .
     - docker tag ${IMAGE_NAME} ${DOCKER_REGISTRY_IMAGE}:${BUILD_VERSION}
     - docker push ${DOCKER_REGISTRY_IMAGE}:${BUILD_VERSION}
-    - docker scout cves --format only-packages --only-vuln-packages --only-severity critical ${DOCKER_REGISTRY_IMAGE}:${BUILD_VERSION}
   variables:
     DOCKER_HOST: tcp://localhost:2376
     DOCKER_TLS_CERTDIR: "/certs"
