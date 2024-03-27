@@ -116,6 +116,7 @@ publish:
     - echo "$DOCKER_REGISTRY_USERNAME:$DOCKER_REGISTRY_PASSWORD"
     - echo -n "$DOCKER_REGISTRY_PASSWORD" | docker login -u "$DOCKER_REGISTRY_USERNAME" --password-stdin "$DOCKER_REGISTRY_URL"
     - apk add --update nodejs nodejs-npm
+    - npm i snyk
     - snyk config set api=${SNYK_API_TOKEN}
     - snyk config set org=${SNYK_ORG_ID}
   script:
