@@ -40,15 +40,15 @@ before_script:
   - gpg --recv-keys --no-default-keyring --keyring gnupg-ring:/etc/apt/trusted.gpg.d/scalasbt-release.gpg --keyserver hkp://keyserver.ubuntu.com:80 2EE0EA64E40A89B84B2DF73499E82A75642AC823
   - chmod 644 /etc/apt/trusted.gpg.d/scalasbt-release.gpg
   - apt-get update -yqq
-  - apt-get install -yqq sbt curl
+  - apt-get install -yqq sbt curl jq
   - curl --compressed https://static.snyk.io/cli/latest/snyk-linux -o snyk
   - chmod +x ./snyk
   - mv ./snyk /usr/local/bin/ 
 
 stages:
   - build
-  - code-analysis
   - package
+  - code-analysis
   - publish
   - deploy-dev
   - notify
@@ -93,7 +93,8 @@ snyk-code-analysis:
         snyk config set api=${SNYK_API_TOKEN}
         snyk config set org=${SNYK_ORG_ID}
         echo "--> Iniciating SNYK Code Analysis"
-        snyk code test --project-id="${SNYK_PROJECT_ID}" --json --json-file-output=snyk-code-analysis.json --all-sub-projects 
+        snyk code test --project-id="${SNYK_PROJECT_ID}" --json  --all-sub-projects  > snyk-code-analysis.json
+        content=$(cat snyk-code-analysis.json)
       fi
   artifacts:
     when: always
