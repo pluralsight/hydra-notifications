@@ -140,7 +140,7 @@ publish:
     - apk add libstdc++ curl 
     - curl --compressed https://static.snyk.io/cli/latest/snyk-alpine -o snyk
     - chmod +x ./snyk
-    - mv ./snyk /usr/lib
+    - mv ./snyk /usr/local/bin
     - | 
       snyk_ver=$(snyk --version)
       echo "--> Installed SNYK Version:${snyk_ver}"
