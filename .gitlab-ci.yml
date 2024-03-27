@@ -115,10 +115,14 @@ publish:
   before_script:
     - echo "$DOCKER_REGISTRY_USERNAME:$DOCKER_REGISTRY_PASSWORD"
     - echo -n "$DOCKER_REGISTRY_PASSWORD" | docker login -u "$DOCKER_REGISTRY_USERNAME" --password-stdin "$DOCKER_REGISTRY_URL"
+    - apk add --update nodejs nodejs-npm
+    - snyk config set api=${SNYK_API_TOKEN}
+    - snyk config set org=${SNYK_ORG_ID}
   script:
     - docker build -t ${IMAGE_NAME} -f Dockerfile .
     - docker tag ${IMAGE_NAME} ${DOCKER_REGISTRY_IMAGE}:${BUILD_VERSION}
     - docker push ${DOCKER_REGISTRY_IMAGE}:${BUILD_VERSION}
+    - snyk container test ${DOCKER_REGISTRY_IMAGE}:${BUILD_VERSION} --file=${CI_PROJECT_DIR}\Dockerfile
   variables:
     DOCKER_HOST: tcp://localhost:2376
     DOCKER_TLS_CERTDIR: "/certs"
