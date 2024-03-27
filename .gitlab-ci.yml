@@ -44,6 +44,7 @@ before_script:
   - chmod +x ./snyk
   - mv ./snyk /usr/local/bin/ 
 
+
 stages:
   - build
   - package
