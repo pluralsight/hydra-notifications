@@ -93,7 +93,7 @@ snyk-code-analysis:
         snyk config set api=${SNYK_API_TOKEN}
         snyk config set org=${SNYK_ORG_ID}
         echo "--> Iniciating SNYK Code Analysis"
-        snyk code test --project-id="${SNYK_PROJECT_ID}" --json-file-output=snyk-code-analysis.json --all-sub-projects 
+        snyk code test --project-id="${SNYK_PROJECT_ID}" --json --json-file-output=snyk-code-analysis.json --all-sub-projects 
       fi
   artifacts:
     when: always
@@ -113,19 +113,11 @@ publish:
   before_script:
     - echo "$DOCKER_REGISTRY_USERNAME:$DOCKER_REGISTRY_PASSWORD"
     - echo -n "$DOCKER_REGISTRY_PASSWORD" | docker login -u "$DOCKER_REGISTRY_USERNAME" --password-stdin "$DOCKER_REGISTRY_URL"
-    - |
-      if [[ -z "$SNYK_API_TOKEN" && -z "$SNYK_ORG_ID" && -z "$SNYK_PROJECT_ID" ]]; then
-        echo "Error While reading required parameters.."
-      else
-        echo "----- Configuring SNYK Api Token and Org -----"
-        snyk config set api=${SNYK_API_TOKEN}
-        snyk config set org=${SNYK_ORG_ID}
-      fi
   script:
     - docker build -t ${IMAGE_NAME} -f Dockerfile .
     - docker tag ${IMAGE_NAME} ${DOCKER_REGISTRY_IMAGE}:${BUILD_VERSION}
     - docker push ${DOCKER_REGISTRY_IMAGE}:${BUILD_VERSION}
-    - snyk container test ${DOCKER_REGISTRY_IMAGE}:${BUILD_VERSION
+    - docker scout cves --format only-packages --only-vuln-packages --only-severity critical ${DOCKER_REGISTRY_IMAGE}:${BUILD_VERSION}
   variables:
     DOCKER_HOST: tcp://localhost:2376
     DOCKER_TLS_CERTDIR: "/certs"
