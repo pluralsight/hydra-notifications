@@ -138,7 +138,7 @@ publish:
     - echo "$DOCKER_REGISTRY_USERNAME:$DOCKER_REGISTRY_PASSWORD"
     - echo -n "$DOCKER_REGISTRY_PASSWORD" | docker login -u "$DOCKER_REGISTRY_USERNAME" --password-stdin "$DOCKER_REGISTRY_URL"
     - apk add libstdc++ curl 
-    - curl --compressed https://static.snyk.io/cli/latest/snyk-alpine-o snyk
+    - curl --compressed https://static.snyk.io/cli/latest/snyk-alpine -o snyk
     - chmod +x ./snyk
     - mv ./snyk /usr/lib
     - | 
