@@ -157,12 +157,16 @@ publish:
     - docker build -t ${IMAGE_NAME} -f Dockerfile .
     - docker tag ${IMAGE_NAME} ${DOCKER_REGISTRY_IMAGE}:${BUILD_VERSION}
     - docker push ${DOCKER_REGISTRY_IMAGE}:${BUILD_VERSION}
-    - snyk container test ${DOCKER_REGISTRY_IMAGE}:${BUILD_VERSION} --file=${CI_PROJECT_DIR}/Dockerfile --json --report --project-id="${SNYK_DOCKER_PROJECT_ID}"
+    - snyk container test ${DOCKER_REGISTRY_IMAGE}:${BUILD_VERSION} --file=${CI_PROJECT_DIR}/Dockerfile --json --report --project-id="${SNYK_DOCKER_PROJECT_ID}" > snyk-container-vul.json
   variables:
     DOCKER_HOST: tcp://localhost:2376
     DOCKER_TLS_CERTDIR: "/certs"
     DOCKER_CERT_PATH: "$DOCKER_TLS_CERTDIR/client"
     DOCKER_TLS_VERIFY: 1
+  artifacts:
+    when: always
+    paths:
+      - snyk-container-vul.json
 
 .notify-all:
   image: harbor.vnerd.com/library/ps-helm:latest
