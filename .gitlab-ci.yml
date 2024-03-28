@@ -169,7 +169,7 @@ publish:
       - snyk-container-vul.json
 
 slack:notify-vulnerability:
-  stage: notify_dev
+  stage: publish
   image: harbor.vnerd.com/library/ps-helm:latest
   tags:
     - ps
@@ -177,6 +177,7 @@ slack:notify-vulnerability:
   script:
     - | 
       ls -lrt
+      echo $SLACK_MESSAGE
       #ps-notify slack "$SLACK_MESSAGE" "$SLACK_CHANNEL"  --slack-username $SLACK_USERNAME --slack-icon-emoji $SLACK_ICON_EMOJI
   when: on_success
   needs: ['publish']
