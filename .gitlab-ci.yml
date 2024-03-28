@@ -186,7 +186,6 @@ slack:notify-vulnerability:
   needs: ['publish']
   before_script:
     - echo "Sending notification to slack"
-    - 
   variables:
     ENV: $ENV
     SERVICE_NAME: "dev-hydra-notifications"
