@@ -178,6 +178,7 @@ slack:notify-vulnerability:
     - | 
       ls -lrt
       echo $SLACK_MESSAGE
+      cat /etc/os-release
       total_vul=$( cat snyk-container-vul.json | jq -r ".vulnerabilities[]")
       echo "$total_vul"
       #ps-notify slack "$SLACK_MESSAGE" "$SLACK_CHANNEL"  --slack-username $SLACK_USERNAME --slack-icon-emoji $SLACK_ICON_EMOJI
@@ -185,6 +186,7 @@ slack:notify-vulnerability:
   needs: ['publish']
   before_script:
     - echo "Sending notification to slack"
+    - 
   variables:
     ENV: $ENV
     SERVICE_NAME: "dev-hydra-notifications"
