@@ -177,7 +177,6 @@ slack:notify-vulnerability:
   script:
     - | 
       TOTAL_VUL=$( cat snyk-container-vul.json | jq ".vulnerabilities[] | length")
-  echo "01XX1234" | sed 's/XX/AB/'
       $MESSAGE=$(echo $SNYK_VULNERABILITY_SLACK_MESSAGE | sed 's/CI_COMMIT_SHA/${CI_COMMIT_SHORT_SHA}')
       MESSAGE=$(echo $MESSAGE | sed 's/TOTAL_VUL/${TOTAL_VUL}' )
       ps-notify slack "$SNYK_VULNERABILITY_SLACK_MESSAGE" "$SLACK_CHANNEL"  --slack-username $SLACK_USERNAME --slack-icon-emoji $SLACK_ICON_EMOJI
