@@ -177,9 +177,10 @@ slack:notify-vulnerability:
   script:
     - | 
       TOTAL_VUL=$( cat snyk-container-vul.json | jq ".vulnerabilities[] | length")
-      $MESSAGE=$(echo $SNYK_VULNERABILITY_SLACK_MESSAGE | sed 's/CI_COMMIT_SHA/${CI_COMMIT_SHORT_SHA}')
-      MESSAGE=$(echo $MESSAGE | sed 's/TOTAL_VUL/${TOTAL_VUL}' )
-      ps-notify slack "$SNYK_VULNERABILITY_SLACK_MESSAGE" "$SLACK_CHANNEL"  --slack-username $SLACK_USERNAME --slack-icon-emoji $SLACK_ICON_EMOJI
+      MESSAGE="Found $TOTAL_VUL vulnerability in *[[SERVICE_NAME]]* 
+      COMMIT_ID: ${CI_COMMIT_SHA}
+      [[PIPELINE_LINK]]"
+      ps-notify slack "$MESSAGE" "$SLACK_CHANNEL"  --slack-username $SLACK_USERNAME --slack-icon-emoji $SLACK_ICON_EMOJI
   when: always
   needs: ['publish']
   before_script:
