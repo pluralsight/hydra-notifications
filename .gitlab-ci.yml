@@ -117,7 +117,7 @@ snyk-code-analysis-notify:
     - apk add jq
   script:
     - | 
-      content=$(cat snyk-code-analysis.json | jq -r ".vulnerabilities[]" )
+      content=$(cat snyk-code-analysis.json | jq -r ".vulnerabilities[].severity" )
       high=0
       medium=0
       critical=0
@@ -139,9 +139,11 @@ snyk-code-analysis-notify:
           fi
       done
       TOTAL=$(($low+$medium+$high+$critical))
-      UNQ_TOTAL_VUL=$( echo $content | jq ".uniqueCount")
-      MESSAGE="Found $TOTAL vulnerability in code for *[[SERVICE_NAME]]* 
-      *SUMMARY*
+      UNQ_TOTAL_VUL=$( cat snyk-code-analysis.json | jq '.uniqueCount' )
+      MESSAGE="Found $TOTAL vulnerability in code for *[[SERVICE_NAME]]*
+      *********** 
+       *SUMMARY*
+      ***********
       *LOW:* $low
       *MEDIUM:* $medium
       *HIGH:* $high
@@ -209,7 +211,7 @@ slack:notify-vulnerability:
   script:
     - | 
       TOTAL_VUL=$( cat snyk-container-vul.json | jq ".uniqueCount")
-      MESSAGE="Found $TOTAL_VUL vulnerability in *[[SERVICE_NAME]]* containers
+      MESSAGE="Found $TOTAL_VUL vulnerability in *[[SERVICE_NAME]]* 
       COMMIT_ID: ${CI_COMMIT_SHORT_SHA}
       [[PIPELINE_LINK]]"
       ps-notify slack "$MESSAGE" "$SLACK_CHANNEL"  --slack-username $SLACK_USERNAME --slack-icon-emoji $SLACK_ICON_EMOJI
@@ -222,7 +224,7 @@ slack:notify-vulnerability:
   variables:
     ENV: $ENV
     SERVICE_NAME: "dev-hydra-notifications"
-    SLACK_CHANNEL: "#ps-itc-dataops-team"
+    SLACK_CHANNEL: "#dataops-test"
     SLACK_ICON_EMOJI: ":alert:"
 
 .notify-all:
