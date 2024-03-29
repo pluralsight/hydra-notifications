@@ -118,7 +118,7 @@ snyk-code-analysis-notify:
     - apk add jq
   script:
     - | 
-      content=$(cat sync| jq -r '.vulnerabilities[].severity')
+      content=$(cat snyk-code-analysis.json | jq -r '.vulnerabilities[].severity')
       high=0
       medium=0
       critical=0
@@ -140,7 +140,7 @@ snyk-code-analysis-notify:
           fi
       done
       TOTAL=$(($low+$medium+$high+$critical))
-      UNQ_TOTAL_VUL=$(cat snyk-code-analysis.json | jq ".uniqueCount")
+      UNQ_TOTAL_VUL=$( echo $content | jq ".uniqueCount")
       MESSAGE="Found $TOTAL vulnerability in code for *[[SERVICE_NAME]]* 
       *SUMMARY*
       *LOW:* $low
