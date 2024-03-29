@@ -44,6 +44,9 @@ before_script:
   - chmod 644 /etc/apt/trusted.gpg.d/scalasbt-release.gpg
   - apt-get update -yqq
   - apt-get install -yqq sbt curl jq
+  - curl --compressed https://static.snyk.io/cli/latest/snyk-linux -o snyk
+  - chmod +x ./snyk
+  - mv ./snyk /usr/local/bin/ 
 
 stages:
   - build
@@ -85,13 +88,21 @@ snyk-code-analysis:
   allow_failure: true      
   script:
     - |
-      snyk test --json-file-output="snyk-code-analysis.json" --all-projects --exclude=temp || echo "snyk test completed"
-      snyk code test --json-file-output="snyk-code-analysis/sca/result.json" || echo "snyk code test completed"
+      snyk_ver=$(snyk --version)
+      echo "--> Installed SNYK Version:${snyk_ver}"
+      if [[ -z "$SNYK_API_TOKEN" && -z "$SNYK_ORG_ID" && -z "$SNYK_PROJECT_ID" ]]; then
+        echo "Error While reading required parameters.."
+      else
+        echo "----- Configuring SNYK Api Token and Org -----"
+        snyk config set api=${SNYK_API_TOKEN}
+        snyk config set org=${SNYK_ORG_ID}
+        echo "--> Iniciating SNYK Code Analysis"
+        snyk test ${CI_PROJECT_DIR} --project-id="${SNYK_PROJECT_ID}" --json --all-projects > snyk-code-analysis.json
+      fi
   artifacts:
     when: always
     paths:
       - snyk-code-analysis.json
-      - snyk-code-analysis/sca/result.json
 
 snyk-code-analysis-notify:
   image: harbor.vnerd.com/library/ps-helm:latest
@@ -181,11 +192,41 @@ publish:
     - docker tag ${IMAGE_NAME} ${DOCKER_REGISTRY_IMAGE}:${BUILD_VERSION}
     - docker push ${DOCKER_REGISTRY_IMAGE}:${BUILD_VERSION}
     - echo "--> Performing Static Code Analysis"
+    - snyk container test ${DOCKER_REGISTRY_IMAGE}:${BUILD_VERSION} --file=${CI_PROJECT_DIR}/Dockerfile --json --report --project-id="${SNYK_DOCKER_PROJECT_ID}" > snyk-container-vul.json
   variables:
     DOCKER_HOST: tcp://localhost:2376
     DOCKER_TLS_CERTDIR: "/certs"
     DOCKER_CERT_PATH: "$DOCKER_TLS_CERTDIR/client"
     DOCKER_TLS_VERIFY: 1
+  artifacts:
+    when: always
+    paths:
+      - snyk-container-vul.json
+
+slack:notify-vulnerability:
+  stage: publish
+  image: harbor.vnerd.com/library/ps-helm:latest
+  tags:
+    - ps
+    - docker 
+  script:
+    - | 
+      TOTAL_VUL=$( cat snyk-container-vul.json | jq ".uniqueCount")
+      MESSAGE="Found $TOTAL_VUL vulnerability in *[[SERVICE_NAME]]* 
+      COMMIT_ID: ${CI_COMMIT_SHORT_SHA}
+      [[PIPELINE_LINK]]"
+      ps-notify slack "$MESSAGE" "$SLACK_CHANNEL"  --slack-username $SLACK_USERNAME --slack-icon-emoji $SLACK_ICON_EMOJI
+  when: always
+  needs: ['publish']
+  before_script:
+    - echo "Sending notification to slack"
+    - apk update
+    - apk add jq
+  variables:
+    ENV: $ENV
+    SERVICE_NAME: "dev-hydra-notifications"
+    SLACK_CHANNEL: "#dataops-test"
+    SLACK_ICON_EMOJI: ":alert:"
 
 .notify-all:
   image: harbor.vnerd.com/library/ps-helm:latest
