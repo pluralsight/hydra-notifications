@@ -101,7 +101,7 @@ snyk-code-analysis:
         snyk config set api=${SNYK_API_TOKEN}
         snyk config set org=${SNYK_ORG_ID}
         echo "--> Iniciating SNYK Code Analysis"
-        snyk code test ${CI_PROJECT_DIR} --project-id="${SNYK_PROJECT_ID}" --json  --all-sub-projects > snyk-code-analysis.json
+        snyk code test ${CI_PROJECT_DIR} --project-id="${SNYK_PROJECT_ID}" --all-sub-projects > snyk-code-analysis.json
         content=$(cat snyk-code-analysis.json)
         echo $content
       fi
