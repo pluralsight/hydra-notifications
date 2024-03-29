@@ -1,0 +1,63 @@
+image:
+  repository: harbor.vnerd.com/library/hydra-notifications
+  pullPolicy: Always
+  tag: latest
+
+serviceAccount:
+  create: true
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::523344010929:role/is-aws-msk-is-hydra-streams-us-west-2
+
+deployment:
+  apiVersion: "apps/v1"
+  updateStrategy:
+    rollingUpdate:
+      maxUnavailable: 0
+    type: RollingUpdate
+
+replicas: 1
+
+service:
+  type: ClusterIP
+  port: 8080
+  annotations: {}
+  labels: {}
+
+ingress:
+  enabled: true
+  ingressClassName: internal
+  annotations: {}
+  labels: {}
+  hosts:
+    - hydra-notifications-dev.eplur-staging.vnerd.com
+    - hydra-notifications-dev-stage.vnerd.com
+  tls:
+    - hosts:
+        - hydra-notifications-dev-stage.vnerd.com
+  path: /
+  pathType: Prefix
+
+hpa:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 1
+  targetMemoryUtilizationPercentage: 80
+
+resources:
+  limits:
+    memory: 512Mi
+  requests:
+    cpu: 250m
+    memory: 50Mi
+
+tolerations: []
+
+nodeSelector: {}
+
+config:
+  LOG_DIR: /var/log/hydra-notifications
+  LOG_LEVEL: ERROR
+  PORT_NUMBER: 8080
+  SLACK_TOKEN: 
+  OPSGENIE_TOKEN: 
+  STREAMS_URL: https://hydra-streams-dev.eplur-staging.vnerd.com

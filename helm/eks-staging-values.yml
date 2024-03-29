@@ -1,0 +1,56 @@
+image:
+  repository: harbor.vnerd.com/library/hydra-notifications
+  pullPolicy: Always
+  tag: latest
+
+deployment:
+  apiVersion: "apps/v1"
+  updateStrategy:
+    rollingUpdate:
+      maxUnavailable: 0
+    type: RollingUpdate
+
+replicas: 2
+
+service:
+  type: ClusterIP
+  port: 8080
+  annotations: {}
+  labels: {}
+
+ingress:
+  enabled: true
+  ingressClassName: internal
+  labels: {}
+  hosts:
+    - hydra-notifications.eplur-staging.vnerd.com
+    - hydra-notifications-stage.vnerd.com
+  path: /
+  pathType: Prefix
+
+
+hpa:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 10
+  targetMemoryUtilizationPercentage: 70
+
+
+resources:
+  limits:
+    memory: 1Gi
+  requests:
+    cpu: 2
+    memory: 1Gi
+
+tolerations: []
+
+nodeSelector: {}
+
+config:
+  LOG_DIR: /var/log/hydra-notifications
+  LOG_LEVEL: ERROR
+  PORT_NUMBER: 8080
+  SLACK_TOKEN: 
+  OPSGENIE_TOKEN: 
+  STREAMS_URL: https://hydra-streams.eplur-staging.vnerd.com
