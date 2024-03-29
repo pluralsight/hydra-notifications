@@ -33,11 +33,6 @@ variables:
     *[[SERVICE_NAME]]* deployed to *[[ENV]]*.
     Version: *[[BUILD_VERSION]]*
     [[PIPELINE_LINK]]
-  SNYK_SLACK_MESSAGE: |
-    Found *[[TOTAL_VUL]]* in *[[SERVICE_NAME]]*  
-    ENV: *[[ENV]]*.
-    COMMIT_ID: *[[CI_COMMIT_SHA]]*
-    [[PIPELINE_LINK]]
   SLACK_USERNAME: 'GITLAB'
 
 before_script:
@@ -101,9 +96,7 @@ snyk-code-analysis:
         snyk config set api=${SNYK_API_TOKEN}
         snyk config set org=${SNYK_ORG_ID}
         echo "--> Iniciating SNYK Code Analysis"
-        snyk code test ${CI_PROJECT_DIR} --project-id="${SNYK_PROJECT_ID}" --all-sub-projects > snyk-code-analysis.json
-        content=$(cat snyk-code-analysis.json)
-        echo $content
+        snyk test ${CI_PROJECT_DIR} --project-id="${SNYK_PROJECT_ID}" --json --all-projects > snyk-code-analysis.json
       fi
   artifacts:
     when: always
@@ -123,8 +116,19 @@ snyk-code-analysis-notify:
     - echo "Sending SNYK notification to slack"
   script:
     - echo "$SNYK_SLACK_MESSAGE"
+    - | 
+      TOTAL_VUL=$( cat snyk-code-analysis.json | jq ".uniqueCount")
+      MESSAGE="Found $TOTAL_VUL vulnerability in *[[SERVICE_NAME]]* 
+      COMMIT_ID: ${CI_COMMIT_SHORT_SHA}
+      [[PIPELINE_LINK]]"
+      ps-notify slack "$MESSAGE" "$SLACK_CHANNEL"  --slack-username $SLACK_USERNAME --slack-icon-emoji $SLACK_ICON_EMOJI
   variables:
-    NODE_ENV: $ENV    
+    NODE_ENV: $ENV  
+    SNYK_SLACK_MESSAGE: |
+      Found *[[TOTAL_VUL]]* in *[[SERVICE_NAME]]*  
+      ENV: *[[ENV]]*.
+      COMMIT_ID: *[[CI_COMMIT_SHA]]*
+      [[PIPELINE_LINK]]  
 
 publish:
   stage: publish
@@ -135,6 +139,7 @@ publish:
   needs:
     - package
     - snyk-code-analysis
+    - snyk-code-analysis-notify
   before_script:
     - echo "$DOCKER_REGISTRY_USERNAME:$DOCKER_REGISTRY_PASSWORD"
     - echo -n "$DOCKER_REGISTRY_PASSWORD" | docker login -u "$DOCKER_REGISTRY_USERNAME" --password-stdin "$DOCKER_REGISTRY_URL"
@@ -191,11 +196,7 @@ slack:notify-vulnerability:
     ENV: $ENV
     SERVICE_NAME: "dev-hydra-notifications"
     SLACK_CHANNEL: "#ps-itc-dataops-team"
-    SLACK_ICON_EMOJI: ":vulnerability-analysis:"
-    SNYK_VULNERABILITY_SLACK_MESSAGE: |
-      Found TOTAL_VUL vulnerability in *[[SERVICE_NAME]]*  
-      COMMIT_ID: CI_COMMIT_SHA
-      [[PIPELINE_LINK]]
+    SLACK_ICON_EMOJI: ":alert:"
 
 .notify-all:
   image: harbor.vnerd.com/library/ps-helm:latest
