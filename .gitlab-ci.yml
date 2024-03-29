@@ -118,8 +118,7 @@ snyk-code-analysis-notify:
     - apk add jq
   script:
     - | 
-      #!/bin/bash
-      content=$(cat snyk-code-analysis.json | jq -r '.vulnerabilities[].severity')
+      content=$(cat snyk-code-analysis.json | jq -r ".vulnerabilities[].severity" )
       high=0
       medium=0
       critical=0
