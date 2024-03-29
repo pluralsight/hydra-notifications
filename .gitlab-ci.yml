@@ -106,7 +106,6 @@ snyk-code-analysis:
 snyk-code-analysis-notify:
   image: harbor.vnerd.com/library/ps-helm:latest
   stage: code-analysis
-  allow_failure: true  
   needs:
     - snyk-code-analysis
   tags:
@@ -118,8 +117,7 @@ snyk-code-analysis-notify:
     - apk add jq
   script:
     - | 
-      ls -lrt
-      content=$(cat snyk-code-analysis.json | jq -r ".vulnerabilities[].severity" )
+      content=$(cat snyk-code-analysis.json | jq -r ".vulnerabilities[]" )
       high=0
       medium=0
       critical=0
