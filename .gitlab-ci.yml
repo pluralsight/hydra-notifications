@@ -154,7 +154,7 @@ snyk-code-analysis-notify:
     NODE_ENV: $ENV  
     ENV: $ENV
     SERVICE_NAME: "dev-hydra-notifications"
-    SLACK_CHANNEL: "#ps-itc-dataops-team"
+    SLACK_CHANNEL: "#dataops-test"
     SLACK_ICON_EMOJI: ":alert:"
 
 publish:
