@@ -114,6 +114,8 @@ snyk-code-analysis-notify:
     - docker 
   before_script:
     - echo "Sending SNYK notification to slack"
+    - apk update
+    - apk add jq
   script:
     - | 
       content=$(cat sync| jq -r '.vulnerabilities[].severity')
