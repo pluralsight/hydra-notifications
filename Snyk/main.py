@@ -5,7 +5,7 @@ def readsynk_json():
     try:
         file=open("snyk-code-analysis.json","r")
         content=file.read()
-        file = open(".\snyk\slack_template.json", "r")
+        file = open(".\Snyk\slack_template.json", "r")
         msg_template = file.read()
         file.close()
         return json.loads(content),msg_template
