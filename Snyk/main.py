@@ -42,7 +42,6 @@ def cook_slack_meesage():
         return 0,msg_template
     except Exception as e:
         print("Exception Occurred" + str(e))
-        return 1,""
 
 status,msg=cook_slack_meesage()
 if int(status) <= 0 :
