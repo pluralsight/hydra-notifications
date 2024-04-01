@@ -118,7 +118,7 @@ snyk-code-analysis-notify:
     - mv ./snyk /usr/local/bin/ 
   script:
     - | 
-      if [ -s snyk-code-analysis.json ]
+      if [ -e ./snyk-code-analysis.json ]
       then
         MESSAGE=$(python3 ./Snyk/main.py)
         echo $MESSAGE
