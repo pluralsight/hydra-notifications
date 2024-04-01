@@ -39,10 +39,10 @@ def cook_slack_meesage():
         msg_template = msg_template.replace("<TOTAL_VUL>", str(len(vulnerability)))
         msg_template = msg_template.replace("<ServiceName>", str(service_name))
         msg_template = msg_template.replace("<CommitID>", str(len(commit_sha)))
-        return 0,msg
+        return 0,msg_template
     except Exception as e:
         print("Exception Occurred" + str(e))
-        return 1,msg
+        return 1,""
 
 status,msg=cook_slack_meesage()
 if int(status) <= 0 :
