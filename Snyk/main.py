@@ -43,5 +43,5 @@ def cook_slack_meesage(webhook_url):
     except Exception as e:
         print("Exception Occurred" + str(e))
 
-msg=cook_slack_meesage(webhook_url)
+msg=cook_slack_meesage()
 print(msg)
