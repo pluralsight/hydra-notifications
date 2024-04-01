@@ -5,7 +5,7 @@ def readsynk_json():
     try:
         file=open("snyk-code-analysis.json","r")
         content=file.read()
-        file = open(".\Snyk\slack_template.json", "r")
+        file = open("./Snyk/slack_template.json", "r")
         msg_template = file.read()
         file.close()
         return json.loads(content),msg_template
@@ -39,9 +39,14 @@ def cook_slack_meesage():
         msg_template = msg_template.replace("<TOTAL_VUL>", str(len(vulnerability)))
         msg_template = msg_template.replace("<ServiceName>", str(service_name))
         msg_template = msg_template.replace("<CommitID>", str(len(commit_sha)))
-        return msg
+        return 0,msg
     except Exception as e:
         print("Exception Occurred" + str(e))
+        return 1,msg
 
-msg=cook_slack_meesage()
-print(msg)
+status,msg=cook_slack_meesage()
+if int(status) <= 0 :
+    print(msg)
+    exit(0)
+else:
+    exit(1)
