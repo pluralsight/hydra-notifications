@@ -113,14 +113,11 @@ snyk-code-analysis-notify:
     - echo "Sending SNYK notification to slack"
     - apk update
     - apk add --update --no-cache python3 jq
-    - curl --compressed https://static.snyk.io/cli/latest/snyk-linux -o snyk
-    - chmod +x ./snyk
-    - mv ./snyk /usr/local/bin/ 
   script:
     - | 
       MESSAGE=$(python3 ./Snyk/main.py)
       echo $MESSAGE
-      ps-notify slack "$MESSAGE" "$SLACK_CHANNEL"  --slack-username $SLACK_USERNAME --slack-icon-emoji $SLACK_ICON_EMOJI
+      #ps-notify slack "$MESSAGE" "$SLACK_CHANNEL"  --slack-username $SLACK_USERNAME --slack-icon-emoji $SLACK_ICON_EMOJI
   variables:
     NODE_ENV: $ENV  
     ENV: $ENV
