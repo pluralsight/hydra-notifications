@@ -118,12 +118,9 @@ snyk-code-analysis-notify:
     - mv ./snyk /usr/local/bin/ 
   script:
     - | 
-      if [ -e ./snyk-code-analysis.json ]
-      then
-        MESSAGE=$(python3 ./Snyk/main.py)
-        echo $MESSAGE
-        ps-notify slack "$MESSAGE" "$SLACK_CHANNEL"  --slack-username $SLACK_USERNAME --slack-icon-emoji $SLACK_ICON_EMOJI
-      fi
+      MESSAGE=$(python3 ./Snyk/main.py)
+      echo $MESSAGE
+      ps-notify slack "$MESSAGE" "$SLACK_CHANNEL"  --slack-username $SLACK_USERNAME --slack-icon-emoji $SLACK_ICON_EMOJI
   variables:
     NODE_ENV: $ENV  
     ENV: $ENV
