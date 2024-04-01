@@ -12,7 +12,7 @@ def readsynk_json():
     except Exception as e:
             print("Exception Occurred"+str(e))
 
-def cook_slack_meesage(webhook_url):
+def cook_slack_meesage():
     try:
         vulnerability=[]
         commit_sha=os.getenv("CI_COMMIT_SHORT_SHA", default=None)
