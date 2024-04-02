@@ -78,7 +78,8 @@ package:
   artifacts:
     paths:
       - hydra-notifications-server
-  snyk-code-analysis:
+
+snyk-code-analysis:
   stage: code-analysis
   image: harbor.vnerd.com/library/snyk:node_18
   before_script:
