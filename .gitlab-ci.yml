@@ -85,14 +85,11 @@ snyk-code-analysis:
     - curl --compressed https://static.snyk.io/cli/latest/snyk-linux -o snyk
     - chmod +x ./snyk
     - mv ./snyk /usr/local/bin/
-
   allow_failure: true      
   script:
     - |
-      sbt_ver=$(sbt --version)
       snyk_ver=$(snyk --version)
       echo "--> Installed SNYK Version:${snyk_ver}"
-      echo "--> Installed Scala Version:${sbt_ver}"
       if [[ -z "$SNYK_API_TOKEN" && -z "$SNYK_ORG_ID" && -z "$SNYK_PROJECT_ID" ]]; then
         echo "Error While reading required parameters.."
       else
