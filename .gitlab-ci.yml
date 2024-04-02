@@ -3,9 +3,7 @@ include:
     file: '/slack-notification/helper.yml'
   - project: 'pluralsight/experience/gitlab-helpers'
     file: '/helm-deploy/helper.yml'
-
 image: openjdk:8
-
 variables:
   ARTIFACT_NAME: hydra-notifications
   IMAGE_NAME: hydra-notifications
@@ -35,15 +33,16 @@ variables:
     [[PIPELINE_LINK]]
   SLACK_USERNAME: 'GITLAB'
 
-before_script:
-  - apt-get update -yqq
-  - apt-get install -yqq apt-transport-https apt-utils
-  - echo "deb https://repo.scala-sbt.org/scalasbt/debian /" | tee -a /etc/apt/sources.list.d/sbt.list
-  - mkdir -p /root/.gnupg
-  - gpg --recv-keys --no-default-keyring --keyring gnupg-ring:/etc/apt/trusted.gpg.d/scalasbt-release.gpg --keyserver hkp://keyserver.ubuntu.com:80 2EE0EA64E40A89B84B2DF73499E82A75642AC823
-  - chmod 644 /etc/apt/trusted.gpg.d/scalasbt-release.gpg
-  - apt-get update -yqq
-  - apt-get install -yqq sbt curl jq
+.startup_script:
+  before_script:
+    - apt-get update -yqq
+    - apt-get install -yqq apt-transport-https apt-utils
+    - echo "deb https://repo.scala-sbt.org/scalasbt/debian /" | tee -a /etc/apt/sources.list.d/sbt.list
+    - mkdir -p /root/.gnupg
+    - gpg --recv-keys --no-default-keyring --keyring gnupg-ring:/etc/apt/trusted.gpg.d/scalasbt-release.gpg --keyserver hkp://keyserver.ubuntu.com:80 2EE0EA64E40A89B84B2DF73499E82A75642AC823
+    - chmod 644 /etc/apt/trusted.gpg.d/scalasbt-release.gpg
+    - apt-get update -yqq
+    - apt-get install -yqq sbt curl jq
 
 stages:
   - build
@@ -60,12 +59,14 @@ stages:
 build:
   stage: build
   retry: 2
+  extends: .startup_script
   script:
     - sbt clean compile test
 
 package:
   stage: package
   retry: 2
+  extends: .startup_script
   script:
     - sbt universal:packageBin
     - CURYEAR=$(date +%Y)
@@ -85,7 +86,8 @@ snyk-code-analysis:
     - curl --compressed https://static.snyk.io/cli/latest/snyk-linux -o snyk
     - chmod +x ./snyk
     - mv ./snyk /usr/local/bin/
-  allow_failure: true      
+  allow_failure: true  
+  extends: .startup_script    
   script:
     - |
       snyk_ver=$(snyk --version)
@@ -111,6 +113,7 @@ snyk-code-analysis:
 snyk-code-analysis-notify:
   image: harbor.vnerd.com/library/ps-helm:latest
   stage: code-analysis
+  extends: .startup_script
   needs:
     - snyk-code-analysis
   tags:
@@ -135,6 +138,7 @@ snyk-code-analysis-notify:
 publish:
   stage: publish
   image: harbor.vnerd.com/proxy/library/docker:cli
+  extends: .startup_script
   tags:
     - ps
     - docker
@@ -178,6 +182,7 @@ publish:
 slack:notify-vulnerability:
   stage: publish
   image: harbor.vnerd.com/library/ps-helm:latest
+  extends: .startup_script
   tags:
     - ps
     - docker 
@@ -202,6 +207,7 @@ slack:notify-vulnerability:
 
 .notify-all:
   image: harbor.vnerd.com/library/ps-helm:latest
+  extends: .startup_script
   tags:
     - ps
     - docker 
