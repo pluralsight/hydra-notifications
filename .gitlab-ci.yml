@@ -78,8 +78,7 @@ package:
   artifacts:
     paths:
       - hydra-notifications-server
-
-snyk-code-analysis:
+  snyk-code-analysis:
   stage: code-analysis
   image: harbor.vnerd.com/library/snyk:node_18
   before_script:
@@ -99,11 +98,13 @@ snyk-code-analysis:
       if [[ -z "$SNYK_API_TOKEN" && -z "$SNYK_ORG_ID" && -z "$SNYK_PROJECT_ID" ]]; then
         echo "Error While reading required parameters.."
       else
-        echo "----- Configuring SNYK Api Token and Org -----"
+        echo "----- Configuring SNYK -----"
         snyk config set api=${SNYK_API_TOKEN}
         snyk config set org=${SNYK_ORG_ID}
+        snyk config set https://app.snyk.io/org/ps-data-services
         echo "--> Iniciating SNYK Code Analysis"
         snyk test ${CI_PROJECT_DIR} --project-id="${SNYK_PROJECT_ID}" --json --all-projects > snyk-code-analysis.json
+        echo "--> Code Check Completed"
       fi
   artifacts:
     when: always
