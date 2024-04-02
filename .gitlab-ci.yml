@@ -100,15 +100,13 @@ snyk-code-analysis:
         snyk config set org=${SNYK_ORG_ID}
         snyk config set https://app.snyk.io/org/ps-data-services
         echo "--> Iniciating SNYK Code Analysis"
-        snyk test --json-file-output="test.json" --all-projects  > snyk-test.json || echo "snyk test completed with errors"
-        snyk code test --project-id="${SNYK_PROJECT_ID}" --json --all-projects > snyk-code-analysis.json || echo "snyk test completed with errors"
+        snyk test --all-projects --report > snyk-code-analysis.json "
         echo "--> Code Check Completed"
       fi
   artifacts:
     when: always
     paths:
       - snyk-code-analysis.json
-      - snyk-test.json
 
 snyk-code-analysis-notify:
   image: harbor.vnerd.com/library/ps-helm:latest
