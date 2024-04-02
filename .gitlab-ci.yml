@@ -100,7 +100,7 @@ snyk-code-analysis:
         snyk config set org=${SNYK_ORG_ID}
         snyk config set https://app.snyk.io/org/ps-data-services
         echo "--> Iniciating SNYK Code Analysis"
-        snyk test --all-projects --report > snyk-code-analysis.json "
+        snyk test --all-projects --report > snyk-code-analysis.json
         echo "--> Code Check Completed"
       fi
   artifacts:
