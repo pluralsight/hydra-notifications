@@ -81,7 +81,11 @@ package:
 
 snyk-code-analysis:
   stage: code-analysis
-  image: harbor.vnerd.com/library/snyk:node_18
+  before_script: 
+    - | 
+      curl --compressed https://static.snyk.io/cli/latest/snyk-linux -o snyk
+      chmod +x ./snyk
+      mv ./snyk /usr/local/bin/ 
   allow_failure: true      
   script:
     - |
