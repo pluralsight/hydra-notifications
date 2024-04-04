@@ -3,6 +3,9 @@ include:
     file: '/slack-notification/helper.yml'
   - project: 'pluralsight/experience/gitlab-helpers'
     file: '/helm-deploy/helper.yml'
+  - project: 'pluralsight/Technology/adapt/data-platform/gitlab-fragments/snyk'
+    ref: PDP1-85-Snyk-Implementation
+    file: 'snyk-check.yml'
 image: openjdk:8
 variables:
   ARTIFACT_NAME: hydra-notifications
@@ -83,55 +86,6 @@ package:
     paths:
       - hydra-notifications-server
 
-snyk-code-analysis:
-  stage: code-analysis
-  allow_failure: true  
-  extends: .startup_script    
-  script:
-    - |
-      snyk_ver=$(snyk --version)
-      echo "--> Installed SNYK Version:${snyk_ver}"
-      if [[ -z "$SNYK_API_TOKEN" && -z "$SNYK_ORG_ID" && -z "$SNYK_PROJECT_ID" ]]; then
-        echo "Error While reading required parameters.."
-      else
-        echo "----- Configuring SNYK -----"
-        snyk config set api=${SNYK_API_TOKEN}
-        snyk config set org=${SNYK_ORG_ID}
-        snyk config set https://app.snyk.io/org/ps-data-services
-        echo "--> Iniciating SNYK Code Analysis"
-        snyk test ${CI_PROJECT_DIR} --project-id="${SNYK_PROJECT_ID}" --json  --all-sub-projects > snyk-code-analysis.json
-        echo "--> Code Check Completed"
-      fi
-  artifacts:
-    when: always
-    paths:
-      - snyk-code-analysis.json
-
-snyk-code-analysis-notify:
-  image: harbor.vnerd.com/library/ps-helm:latest
-  stage: code-analysis
-  extends: .startup_script
-  needs:
-    - snyk-code-analysis
-  tags:
-    - ps
-    - docker 
-  before_script:
-    - echo "Sending SNYK notification to slack"
-    - apk update
-    - apk add --update --no-cache python3 jq
-  script:
-    - | 
-      MESSAGE=$(python3 ./Snyk/main.py)
-      ps-notify slack 
-      ps-notify slack "$MESSAGE" "$SLACK_CHANNEL"  --slack-username $SLACK_USERNAME --slack-icon-emoji $SLACK_ICON_EMOJI
-  variables:
-    NODE_ENV: $ENV  
-    ENV: $ENV
-    SERVICE_NAME: "dev-hydra-notifications"
-    SLACK_CHANNEL: "#dataops-test"
-    SLACK_ICON_EMOJI: ":alert:"
-
 publish:
   stage: publish
   image: harbor.vnerd.com/proxy/library/docker:cli
@@ -141,66 +95,19 @@ publish:
     - docker
   needs:
     - package
-    - snyk-code-analysis
-    - snyk-code-analysis-notify
   before_script:
     - echo "$DOCKER_REGISTRY_USERNAME:$DOCKER_REGISTRY_PASSWORD"
     - echo -n "$DOCKER_REGISTRY_PASSWORD" | docker login -u "$DOCKER_REGISTRY_USERNAME" --password-stdin "$DOCKER_REGISTRY_URL"
     - apk add libstdc++ curl 
-    - curl --compressed https://static.snyk.io/cli/latest/snyk-alpine -o snyk
-    - chmod +x ./snyk
-    - mv ./snyk /usr/local/bin
-    - | 
-      snyk_ver=$(snyk --version)
-      echo "--> Installed SNYK Version:${snyk_ver}"
-      if [[ -z "$SNYK_API_TOKEN" && -z "$SNYK_ORG_ID" && -z "$SNYK_PROJECT_ID" ]]; then
-        echo "Error While reading required parameters.."
-      else
-        echo "----- Configuring SNYK Api Token and Org -----"
-        snyk config set api=${SNYK_API_TOKEN}
-        snyk config set org=${SNYK_ORG_ID}
-      fi
   script:
     - docker build -t ${IMAGE_NAME} -f Dockerfile .
     - docker tag ${IMAGE_NAME} ${DOCKER_REGISTRY_IMAGE}:${BUILD_VERSION}
     - docker push ${DOCKER_REGISTRY_IMAGE}:${BUILD_VERSION}
-    - echo "--> Performing Static Code Analysis"
-    - snyk container test ${DOCKER_REGISTRY_IMAGE}:${BUILD_VERSION} --file=${CI_PROJECT_DIR}/Dockerfile --json --report --project-id="${SNYK_DOCKER_PROJECT_ID}" > snyk-container-vul.json
   variables:
     DOCKER_HOST: tcp://localhost:2376
     DOCKER_TLS_CERTDIR: "/certs"
     DOCKER_CERT_PATH: "$DOCKER_TLS_CERTDIR/client"
     DOCKER_TLS_VERIFY: 1
-  artifacts:
-    when: always
-    paths:
-      - snyk-container-vul.json
-
-slack:notify-vulnerability:
-  stage: publish
-  image: harbor.vnerd.com/library/ps-helm:latest
-  extends: .startup_script
-  tags:
-    - ps
-    - docker 
-  script:
-    - | 
-      TOTAL_VUL=$( cat snyk-container-vul.json | jq ".uniqueCount")
-      MESSAGE="Found $TOTAL_VUL vulnerability in *[[SERVICE_NAME]]* 
-      COMMIT_ID: ${CI_COMMIT_SHORT_SHA}
-      [[PIPELINE_LINK]]"
-      ps-notify slack "$MESSAGE" "$SLACK_CHANNEL"  --slack-username $SLACK_USERNAME --slack-icon-emoji $SLACK_ICON_EMOJI
-  when: always
-  needs: ['publish','snyk-code-analysis']
-  before_script:
-    - echo "Sending notification to slack"
-    - apk update
-    - apk add jq
-  variables:
-    ENV: $ENV
-    SERVICE_NAME: "dev-hydra-notifications"
-    SLACK_CHANNEL: "#dataops-test"
-    SLACK_ICON_EMOJI: ":alert:"
 
 .notify-all:
   image: harbor.vnerd.com/library/ps-helm:latest
