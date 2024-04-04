@@ -6,6 +6,7 @@ include:
   - project: 'pluralsight/Technology/adapt/data-platform/gitlab-fragments/snyk'
     ref: PDP1-85-Snyk-Implementation
     file: 'snyk-check.yml'
+
 image: openjdk:8
 variables:
   ARTIFACT_NAME: hydra-notifications
@@ -51,7 +52,7 @@ variables:
     - mv ./snyk /usr/local/bin/
 
 stages:
-  - code-analysis
+  - snyk-code-analysis
   - build
   - package
   - publish
