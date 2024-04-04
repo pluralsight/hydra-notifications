@@ -50,4 +50,4 @@ config:
   PORT_NUMBER: 8080
   SLACK_TOKEN: 
   OPSGENIE_TOKEN: 
-  STREAMS_URL: https://hydra-streams-dev.eplur-staging.vnerd.com
+  STREAMS_URL: https://hydra-streams.eplur-production.vnerd.com
