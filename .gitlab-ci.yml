@@ -56,7 +56,7 @@ stages:
   - package
   - publish
   - deploy-dev
-  - snyk-code-analysis
+  - code-analysis
   - notify
   - notify_dev
   - deploy-staging
