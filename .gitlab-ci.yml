@@ -96,6 +96,7 @@ publish:
     - docker
   needs:
     - package
+    - 
   before_script:
     - echo "$DOCKER_REGISTRY_USERNAME:$DOCKER_REGISTRY_PASSWORD"
     - echo -n "$DOCKER_REGISTRY_PASSWORD" | docker login -u "$DOCKER_REGISTRY_USERNAME" --password-stdin "$DOCKER_REGISTRY_URL"
@@ -125,7 +126,7 @@ deploy-dev:
     stage: deploy-dev
     extends: .helmDeploy
     environment:
-      name: dev
+      name: staging
     variables:
       HELM_CHART_NAME: ps-service
       HELM_DEPLOY_TOKEN: ${HELM_DEPLOY_TOKEN}
