@@ -20,32 +20,34 @@ service:
 
 ingress:
   enabled: true
-  ingressClassName: alb
+  ingressClassName: internal
+  annotations: {}
   labels: {}
   hosts:
-    - dvs.eplur-production.vnerd.com
-    - dvs-production.vnerd.com
+    - hydra-notifications.eplur-production.vnerd.com
+    - hydra-notifications.vnerd.com
+    - hydra-notifications-production.vnerd.com
   tls:
     - hosts:
-        - dvs.eplur-production.vnerd.com
+        - hydra-notifications-production.vnerd.com
   path: /
-
+  pathType: Prefix
 
 resources:
   limits:
-    memory: 512Mi
+    memory: 1Gi
   requests:
-    cpu: 250m
-    memory: 50Mi
+    cpu: 2
+    memory: 1Gi
 
 tolerations: []
 
 nodeSelector: {}
 
 config:
-  NODE_ENV: production
-  INGEST_URL: https://hydra-publish.eplur-production.vnerd.com
-  PUBLIC_URL: https://dvs.eplur-production.vnerd.com/dvs-data-explorer
-  REACT_APP_INGEST_URL: https://hydra-publish.eplur-production.vnerd.com
-  REACT_APP_STREAMS_URL: https://hydra-streams.eplur-production.vnerd.com
-  STREAMS_URL: https://hydra-streams.eplur-production.vnerd.com
+  LOG_DIR: /var/log/hydra-notifications
+  LOG_LEVEL: ERROR
+  PORT_NUMBER: 8080
+  SLACK_TOKEN: 
+  OPSGENIE_TOKEN: 
+  STREAMS_URL: https://hydra-streams-dev.eplur-staging.vnerd.com
