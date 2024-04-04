@@ -43,6 +43,9 @@ variables:
     - chmod 644 /etc/apt/trusted.gpg.d/scalasbt-release.gpg
     - apt-get update -yqq
     - apt-get install -yqq sbt curl jq
+    - curl --compressed https://static.snyk.io/cli/latest/snyk-linux -o snyk
+    - chmod +x ./snyk
+    - mv ./snyk /usr/local/bin/
 
 stages:
   - build
@@ -82,10 +85,6 @@ package:
 
 snyk-code-analysis:
   stage: code-analysis
-  before_script:
-    - curl --compressed https://static.snyk.io/cli/latest/snyk-linux -o snyk
-    - chmod +x ./snyk
-    - mv ./snyk /usr/local/bin/
   allow_failure: true  
   extends: .startup_script    
   script:
