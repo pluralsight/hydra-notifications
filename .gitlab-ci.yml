@@ -48,9 +48,9 @@ variables:
     - mv ./snyk /usr/local/bin/
 
 stages:
+  - code-analysis
   - build
   - package
-  - code-analysis
   - publish
   - deploy-dev
   - notify
@@ -123,6 +123,7 @@ snyk-code-analysis-notify:
   script:
     - | 
       MESSAGE=$(python3 ./Snyk/main.py)
+      ps-notify slack 
       ps-notify slack "$MESSAGE" "$SLACK_CHANNEL"  --slack-username $SLACK_USERNAME --slack-icon-emoji $SLACK_ICON_EMOJI
   variables:
     NODE_ENV: $ENV  
