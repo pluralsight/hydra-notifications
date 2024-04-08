@@ -68,6 +68,7 @@ build:
   retry: 2
   extends: .startup_script
   script:
+    - echo "Project Path:${CI_PROJECT_PATH}"
     - sbt clean compile test
 
 package:
