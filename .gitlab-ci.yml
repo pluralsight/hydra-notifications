@@ -18,8 +18,6 @@ variables:
   ARTIFACTORY_PATH: ${ARTIFACTORY_ID}/${ARTIFACTORY_ARTIFACT_VERSION}
   ARTIFACTORY_ARTIFACT_URL: ${ARTIFACTORY_REPOSITORY_URL}/${ARTIFACTORY_REPOSITORY}/${ARTIFACTORY_PATH}
   BUILD_VERSION: 1.0.${CI_PIPELINE_IID}
-  HELM_K8S_CLUSTER_URL: https://6C29C0073BB19BEF220B9437E6962AF2.gr7.us-west-2.eks.amazonaws.com
-  K8S_CLUSTER_NAME: app-eks.eplur-staging.us-west-2
   ENV: ${CI_JOB_STAGE} 
   SERVICE_NAME: "hydra-notifications"
   SLACK_ICON_EMOJI: ":gitlab:"
@@ -44,7 +42,6 @@ before_script:
   - chmod +x ./snyk
   - mv ./snyk /usr/local/bin/ 
 
-
 stages:
   - build
   - package
@@ -55,7 +52,8 @@ stages:
   - notify_dev
   - deploy-staging
   - notify_staging
-
+  - deploy-production
+  - notify_production
 
 build:
   stage: build
@@ -96,7 +94,6 @@ snyk-code-analysis:
     paths:
       - ./snyk-code-analysis.json
       
-
 publish:
   stage: publish
   image: harbor.vnerd.com/proxy/library/docker:cli
@@ -136,17 +133,17 @@ deploy-dev:
       name: dev
     variables:
       HELM_CHART_NAME: ps-service
-      HELM_DEPLOY_TOKEN: ${HELM_DEPLOY_TOKEN}
-      K8S_CLUSTER_NAME: app-eks.eplur-staging.us-west-2
-      HELM_K8S_CLUSTER_URL: https://6C29C0073BB19BEF220B9437E6962AF2.gr7.us-west-2.eks.amazonaws.com
+      HELM_DEPLOY_TOKEN: ${HELM_DEV_DEPLOY_TOKEN}
+      K8S_CLUSTER_NAME: ${K8S_DEV_CLUSTER_NAME}
+      HELM_K8S_CLUSTER_URL: ${K8S_DEV_CLUSTER_URL}
       BOUNDED_CONTEXT: adapt-dvs-dev
       HELM_TARGET_NAMESPACE: ${BOUNDED_CONTEXT}
       APPLICATION_ROLE: dev-hydra-notifications
       HELM_VALUES_FILE: helm/eks-dev-values.yml
-      HELM_SET_VALUES: "NODE_ENV=production, INGEST_URL=https://dev-hydra.eplur-staging.vnerd.com, PUBLIC_URL=https://dvs-dev.eplur-staging.vnerd.com/dvs-data-explorer, REACT_APP_INGEST_URL=https://dev-hydra.eplur-staging.vnerd.com, REACT_APP_STREAMS_URL=https://hydra-streams-dev.eplur-staging.vnerd.com, STREAMS_URL=https://hydra-streams-dev.eplur-staging.vnerd.com"
+      HELM_SET_VALUES: "NODE_ENV=production, INGEST_URL=https://hydra-publish-dev.eplur-staging.vnerd.com, PUBLIC_URL=https://dvs-dev.eplur-staging.vnerd.com/dvs-data-explorer, REACT_APP_INGEST_URL=https://hydra-publish-dev.eplur-staging.vnerd.com, REACT_APP_STREAMS_URL=https://hydra-streams-dev.eplur-staging.vnerd.com, STREAMS_URL=https://hydra-streams-dev.eplur-staging.vnerd.com"
     before_script:
       - export BUILD_VERSION="$(date +%Y).$(date +%m).$(date +%d).${CI_COMMIT_SHORT_SHA}"
-      - kubectl config set-cluster app-${CI_ENVIRONMENT_NAME%/*} --server=${HELM_K8S_CLUSTER_URL} --embed-certs --certificate-authority="$HELM_K8S_CLUSTER_CACERT"
+      - kubectl config set-cluster app-${CI_ENVIRONMENT_NAME%/*} --server=${HELM_K8S_CLUSTER_URL} --embed-certs --certificate-authority="$HELM_DEV_K8S_CLUSTER_CACERT"
       - kubectl config set-credentials deploy --token=`echo ${HELM_DEPLOY_TOKEN} | base64 -d`
       - kubectl config set-context deploy --cluster=app-${CI_ENVIRONMENT_NAME%/*} --namespace=${HELM_TARGET_NAMESPACE} --user=deploy
       - kubectl config use-context deploy
@@ -170,9 +167,9 @@ deploy-staging:
       name: staging
     variables:
       HELM_CHART_NAME: ps-service
-      HELM_DEPLOY_TOKEN: ${HELM_DEPLOY_TOKEN}
-      K8S_CLUSTER_NAME: app-eks.eplur-staging.us-west-2
-      HELM_K8S_CLUSTER_URL: https://6C29C0073BB19BEF220B9437E6962AF2.gr7.us-west-2.eks.amazonaws.com
+      HELM_DEPLOY_TOKEN: ${HELM_STAGE_DEPLOY_TOKEN}
+      K8S_CLUSTER_NAME: ${K8S_STAGE_CLUSTER_NAME}
+      HELM_K8S_CLUSTER_URL: ${K8S_STAGE_CLUSTER_URL}
       BOUNDED_CONTEXT: adapt-dvs
       HELM_TARGET_NAMESPACE: ${BOUNDED_CONTEXT}
       APPLICATION_ROLE: is-hydra-notifications
@@ -180,7 +177,7 @@ deploy-staging:
       HELM_SET_VALUES: "NODE_ENV=production, INGEST_URL=https://hydra-publish.eplur-staging.vnerd.com, PUBLIC_URL=https://dvs.eplur-staging.vnerd.com/dvs-data-explorer, REACT_APP_INGEST_URL=https://hydra-publish.eplur-staging.vnerd.com, REACT_APP_STREAMS_URL=https://hydra-streams.eplur-staging.vnerd.com, STREAMS_URL=https://hydra-streams.eplur-staging.vnerd.com"
     before_script:
       - export BUILD_VERSION="$(date +%Y).$(date +%m).$(date +%d).${CI_COMMIT_SHORT_SHA}"
-      - kubectl config set-cluster app-${CI_ENVIRONMENT_NAME%/*} --server=${HELM_K8S_CLUSTER_URL} --embed-certs --certificate-authority="$HELM_K8S_CLUSTER_CACERT"
+      - kubectl config set-cluster app-${CI_ENVIRONMENT_NAME%/*} --server=${HELM_K8S_CLUSTER_URL} --embed-certs --certificate-authority="$HELM_STAGE_K8S_CLUSTER_CACERT"
       - kubectl config set-credentials deploy --token=`echo ${HELM_DEPLOY_TOKEN} | base64 -d`
       - kubectl config set-context deploy --cluster=app-${CI_ENVIRONMENT_NAME%/*} --namespace=${HELM_TARGET_NAMESPACE} --user=deploy
       - kubectl config use-context deploy
@@ -195,3 +192,37 @@ slack:staging:
   variables:
     ENV: "STAGING Cluster"
     SERVICE_NAME: "is-hydra-notifications"
+
+deploy-production:
+    stage: deploy-production
+    extends: .helmDeploy
+    when: manual
+    environment:
+      name: production
+    variables:
+      HELM_CHART_NAME: ps-service
+      HELM_DEPLOY_TOKEN: ${HELM_PROD_DEPLOY_TOKEN}
+      K8S_CLUSTER_NAME: ${K8S_PROD_CLUSTER_NAME}
+      HELM_K8S_CLUSTER_URL: ${K8S_PROD_CLUSTER_URL}
+      BOUNDED_CONTEXT: adapt-dvs
+      HELM_TARGET_NAMESPACE: ${BOUNDED_CONTEXT}
+      APPLICATION_ROLE: ip-hydra-notifications
+      HELM_VALUES_FILE: helm/eks-production-values.yml
+      HELM_SET_VALUES: "NODE_ENV=production, INGEST_URL=https://hydra-publish.eplur-production.vnerd.com, PUBLIC_URL=https://dvs.eplur-production.vnerd.com/dvs-data-explorer, REACT_APP_INGEST_URL=https://hydra-publish.eplur-production.vnerd.com, REACT_APP_STREAMS_URL=https://hydra-streams.eplur-production.vnerd.com, STREAMS_URL=https://hydra-streams.eplur-production.vnerd.com"
+    before_script:
+      - export BUILD_VERSION="$(date +%Y).$(date +%m).$(date +%d).${CI_COMMIT_SHORT_SHA}"
+      - kubectl config set-cluster app-${CI_ENVIRONMENT_NAME%/*} --server=${HELM_K8S_CLUSTER_URL} --embed-certs --certificate-authority="$HELM_PROD_K8S_CLUSTER_CACERT"
+      - kubectl config set-credentials deploy --token=`echo ${HELM_DEPLOY_TOKEN} | base64 -d`
+      - kubectl config set-context deploy --cluster=app-${CI_ENVIRONMENT_NAME%/*} --namespace=${HELM_TARGET_NAMESPACE} --user=deploy
+      - kubectl config use-context deploy
+
+slack:production:
+  stage: notify_production
+  extends: .notify-all
+  when: on_success
+  needs: ['deploy-production']
+  before_script:
+    - echo "Sending notification to slack"
+  variables:
+    ENV: "Production Cluster"
+    SERVICE_NAME: "ip-hydra-notifications"

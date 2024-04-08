@@ -1,5 +1,5 @@
 image:
-  repository: harbor.vnerd.com/library/dvs-data-explorer
+  repository: harbor.vnerd.com/library/hydra-notifications
   pullPolicy: Always
   tag: latest
 
@@ -14,38 +14,46 @@ replicas: 2
 
 service:
   type: ClusterIP
-  port: 80
+  port: 8080
   annotations: {}
   labels: {}
 
 ingress:
   enabled: true
-  ingressClassName: alb
+  ingressClassName: internal
+  annotations: {}
   labels: {}
   hosts:
-    - dvs.eplur-production.vnerd.com
-    - dvs-production.vnerd.com
+    - hydra-notifications.eplur-production.vnerd.com
+    - hydra-notifications.vnerd.com
+    - hydra-notifications-production.vnerd.com
   tls:
     - hosts:
-        - dvs.eplur-production.vnerd.com
+        - hydra-notifications-production.vnerd.com
   path: /
+  pathType: Prefix
 
+hpa:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 2
+  targetMemoryUtilizationPercentage: 80
 
 resources:
   limits:
-    memory: 512Mi
+    memory: 1Gi
   requests:
-    cpu: 250m
-    memory: 50Mi
+    cpu: 2
+    memory: 1Gi
 
 tolerations: []
 
 nodeSelector: {}
 
 config:
-  NODE_ENV: production
-  INGEST_URL: https://hydra-publish.eplur-production.vnerd.com
-  PUBLIC_URL: https://dvs.eplur-production.vnerd.com/dvs-data-explorer
-  REACT_APP_INGEST_URL: https://hydra-publish.eplur-production.vnerd.com
-  REACT_APP_STREAMS_URL: https://hydra-streams.eplur-production.vnerd.com
+  LOG_DIR: /var/log/hydra-notifications
+  LOG_LEVEL: ERROR
+  PORT_NUMBER: 8080
+  SLACK_TOKEN: 
+  OPSGENIE_TOKEN: 
   STREAMS_URL: https://hydra-streams.eplur-production.vnerd.com
