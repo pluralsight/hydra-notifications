@@ -4,7 +4,7 @@ include:
   - project: 'pluralsight/experience/gitlab-helpers'
     file: '/helm-deploy/helper.yml'
   - project: 'pluralsight/Technology/adapt/data-platform/gitlab-fragments/snyk'
-    ref: PDP1-85-Snyk-Implementation
+    ref: main
     file: 'snyk-check.yml'
 
 image: openjdk:8
