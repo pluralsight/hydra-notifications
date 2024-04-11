@@ -26,7 +26,7 @@ variables:
   SERVICE_NAME: "hydra-notifications"
   SLACK_ICON_EMOJI: ":gitlab:"
   SLACK_CHANNEL: '#data-platform-alerts'
-  SNYK_SLACK_CHANNEL: '#dataops-test'
+  SNYK_SLACK_CHANNEL: '#dataops-snyk-vulnerability-alerts'
   SNYK_SLACK_ICON_EMOJI: ":snyk:"
   SNYK_ORG_ID: "d8094638-7a37-413f-b1b4-ad840fb9e239"
   SNYK_PROJECT_ID: "cdafcbb5-24d1-4afc-bcda-96055113fc57"
