@@ -25,6 +25,9 @@ ingress:
   hosts:
     - hydra-notifications.eplur-staging.vnerd.com
     - hydra-notifications-stage.vnerd.com
+  tls:
+    - hosts:
+        - hydra-notifications-stage.vnerd.com
   path: /
   pathType: Prefix
 
@@ -54,4 +57,3 @@ config:
   SLACK_TOKEN: 
   OPSGENIE_TOKEN: 
   STREAMS_URL: https://hydra-streams.eplur-staging.vnerd.com
-
