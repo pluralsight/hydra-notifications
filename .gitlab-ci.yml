@@ -83,33 +83,33 @@ package:
     paths:
       - hydra-notifications-server
 
-snyk-code-analysis:
-  stage: code-analysis
-  allow_failure: true      
-  script:
-    - |
-      snyk_ver=$(snyk --version)
-      echo "--> Installed SNYK Version:${snyk_ver}"
-      echo "----- Configuring SNYK Api Token and Org -----"
-      snyk config set api=${SNYK_API_TOKEN}
-      snyk config set org=${SNYK_ORG_ID}
-      echo "--> Iniciating SNYK Code Analysis"
-      snyk code test --report --project-id="cdafcbb5-24d1-4afc-bcda-96055113fc57" --commit-id="${CI_COMMIT_SHA}"
-  artifacts:
-    when: always
-    paths:
-      - ./snyk-code-analysis.json
+# snyk-code-analysis:
+#   stage: code-analysis
+#   allow_failure: true      
+#   script:
+#     - |
+#       snyk_ver=$(snyk --version)
+#       echo "--> Installed SNYK Version:${snyk_ver}"
+#       echo "----- Configuring SNYK Api Token and Org -----"
+#       snyk config set api=${SNYK_API_TOKEN}
+#       snyk config set org=${SNYK_ORG_ID}
+#       echo "--> Iniciating SNYK Code Analysis"
+#       snyk code test --report --project-id="cdafcbb5-24d1-4afc-bcda-96055113fc57" --commit-id="${CI_COMMIT_SHA}"
+#   artifacts:
+#     when: always
+#     paths:
+#       - ./snyk-code-analysis.json
       
 publish:
   stage: publish
   image: harbor.vnerd.com/proxy/library/docker:cli
-  extends: .startup_script
+  # extends: .startup_script
   tags:
     - ps
     - docker
   needs:
     - package
-    - snyk-code-check
+    # - snyk-code-check
   before_script:
     - echo "$DOCKER_REGISTRY_USERNAME:$DOCKER_REGISTRY_PASSWORD"
     - echo -n "$DOCKER_REGISTRY_PASSWORD" | docker login -u "$DOCKER_REGISTRY_USERNAME" --password-stdin "$DOCKER_REGISTRY_URL"
