@@ -58,6 +58,8 @@ config:
   LOG_DIR: /var/log/hydra-notifications
   LOG_LEVEL: ERROR
   PORT_NUMBER: 8080
-  SLACK_TOKEN: 
-  OPSGENIE_TOKEN: 
   STREAMS_URL: https://hydra-streams-dev.eplur-staging.vnerd.com
+
+secret:
+  SLACK_TOKEN: 
+  OPSGENIE_TOKEN:
