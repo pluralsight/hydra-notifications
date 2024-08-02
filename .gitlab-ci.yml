@@ -118,7 +118,7 @@ deploy-dev:
       HELM_TARGET_NAMESPACE: ${BOUNDED_CONTEXT}
       APPLICATION_ROLE: dev-hydra-notifications
       HELM_VALUES_FILE: helm/eks-dev-values.yml
-      HELM_SET_VALUES: "secret.SLACK_TOKEN=${SLACK_TOKEN}, secret.OPSGENIE_TOKEN=${OPSGENIE_TOKEN}, NODE_ENV=production, INGEST_URL=https://hydra-publish-dev.eplur-staging.vnerd.com, PUBLIC_URL=https://dvs-dev.eplur-staging.vnerd.com/dvs-data-explorer, REACT_APP_INGEST_URL=https://hydra-publish-dev.eplur-staging.vnerd.com, REACT_APP_STREAMS_URL=https://hydra-streams-dev.eplur-staging.vnerd.com, STREAMS_URL=https://hydra-streams-dev.eplur-staging.vnerd.com"
+      HELM_SET_VALUES: "secret.SLACK_TOKEN=`echo ${SLACK_TOKEN} | base64 -d`, secret.OPSGENIE_TOKEN=`echo ${OPSGENIE_TOKEN} | base64 -d`, NODE_ENV=production, INGEST_URL=https://hydra-publish-dev.eplur-staging.vnerd.com, PUBLIC_URL=https://dvs-dev.eplur-staging.vnerd.com/dvs-data-explorer, REACT_APP_INGEST_URL=https://hydra-publish-dev.eplur-staging.vnerd.com, REACT_APP_STREAMS_URL=https://hydra-streams-dev.eplur-staging.vnerd.com, STREAMS_URL=https://hydra-streams-dev.eplur-staging.vnerd.com"
     before_script:
       - export BUILD_VERSION="$(date +%Y).$(date +%m).$(date +%d).${CI_COMMIT_SHORT_SHA}"
       - kubectl config set-cluster app-${CI_ENVIRONMENT_NAME%/*} --server=${HELM_K8S_CLUSTER_URL} --embed-certs --certificate-authority="$HELM_DEV_K8S_CLUSTER_CACERT"
