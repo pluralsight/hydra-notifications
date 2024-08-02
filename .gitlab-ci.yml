@@ -182,6 +182,10 @@ deploy-production:
     when: manual
     environment:
       name: production
+    rules:
+      - if: $CI_COMMIT_BRANCH == "master"
+        when: manual 
+      - when: never
     variables:
       HELM_CHART_NAME: ps-service
       HELM_DEPLOY_TOKEN: ${HELM_PROD_DEPLOY_TOKEN}
@@ -209,6 +213,10 @@ slack:production:
   needs: ['deploy-production']
   before_script:
     - echo "Sending notification to slack"
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master"
+      when: manual 
+    - when: never
   variables:
     ENV: "Production Cluster"
     SERVICE_NAME: "ip-hydra-notifications"
