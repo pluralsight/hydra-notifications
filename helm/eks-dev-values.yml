@@ -55,8 +55,8 @@ tolerations: []
 nodeSelector: {}
 
 secret:
-  SLACK_TOKEN: 
-  OPSGENIE_TOKEN: 
+  SLACK_TOKEN: %SLACK_TOKEN%
+  OPSGENIE_TOKEN: %OPSGENIE_TOKEN%
 
 config:
   LOG_DIR: /var/log/hydra-notifications
