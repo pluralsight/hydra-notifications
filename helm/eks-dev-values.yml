@@ -54,6 +54,7 @@ tolerations: []
 
 nodeSelector: {}
 
+
 config:
   LOG_DIR: /var/log/hydra-notifications
   LOG_LEVEL: ERROR
