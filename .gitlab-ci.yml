@@ -215,7 +215,7 @@ slack:production:
     - echo "Sending notification to slack"
   rules:
     - if: $CI_COMMIT_BRANCH == "master"
-      when: manual 
+      when: on_success 
     - when: never
   variables:
     ENV: "Production Cluster"
