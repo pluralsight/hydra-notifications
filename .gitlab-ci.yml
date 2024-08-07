@@ -3,6 +3,7 @@ include:
     file: '/slack-notification/helper.yml'
   - project: 'pluralsight/experience/gitlab-helpers'
     file: '/helm-deploy/helper.yml'
+    ref: ed66fabd66cfd95d69219a74ae4b64ffbe4d84a6
   - project: 'pluralsight/Technology/adapt/data-platform/gitlab-fragments/snyk'
     ref: main
     file: 'snyk-check.yml'
@@ -118,6 +119,7 @@ deploy-dev:
       APPLICATION_ROLE: dev-hydra-notifications
       HELM_VALUES_FILE: helm/eks-dev-values.yml
       HELM_SET_VALUES: "NODE_ENV=production, INGEST_URL=https://hydra-publish-dev.eplur-staging.vnerd.com, PUBLIC_URL=https://dvs-dev.eplur-staging.vnerd.com/dvs-data-explorer, REACT_APP_INGEST_URL=https://hydra-publish-dev.eplur-staging.vnerd.com, REACT_APP_STREAMS_URL=https://hydra-streams-dev.eplur-staging.vnerd.com, STREAMS_URL=https://hydra-streams-dev.eplur-staging.vnerd.com"
+      SALT_HELPER_PIN: ed66fabd
     before_script:
       - echo "Setting the SLACK Token and OPSGENIE Token"
       - sed -i -e "s/%SLACK_TOKEN%/${SLACK_TOKEN}/g" $HELM_VALUES_FILE
