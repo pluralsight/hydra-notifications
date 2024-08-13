@@ -63,7 +63,8 @@ package:
     - ls -lrt ./target/universal
   artifacts:
     paths:
-      - hydra-notifications-server
+      - ${CI_PROJECT_DIR}/target/universal/hydra-notifications-0.1.0.tgz
+    expire_in: 1day
       
 publish:
   stage: publish
