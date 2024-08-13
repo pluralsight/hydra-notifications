@@ -37,7 +37,7 @@ variables:
 
 
 stages:
-  #- build
+  - build
   #- code-analysis
   - package
   - publish
