@@ -64,7 +64,7 @@ class NotificationsClientSpec extends TestKit(ActorSystem("test"))
 
     it("sends an opsgenie notification") {
       val response = client.postNotification(OpsGenieNotification(
-        "testMessage", "p2", "alias", Some("description"), Some("note"), "team", Seq("tag"),
+        "testMessage", "P2", "alias", Some("description"), Some("note"), "team", Seq("tag"),
         "entity", Some("source"), "user", None))
       whenReady(response) { r => r shouldBe NotificationsResponse(200, "done") }
     }
