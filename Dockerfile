@@ -18,7 +18,7 @@ ADD ./target/universal/hydra-notifications-*.tgz /opt/hydra-notifications-server
 
 # Set the working directory
 WORKDIR /opt/hydra-notifications-server
-RUN mv /opt/hydra-notifications-server/hydra-notifications-*/* .
+RUN mv /opt/hydra-notifications-server/hydra-notifications-*/* /opt/hydra-notifications-server/hydra-notifications/
 
 # Set the entry point for the application
 ENTRYPOINT ["/opt/hydra-notifications-server/bin/hydra-notifications-server"]
