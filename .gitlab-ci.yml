@@ -59,14 +59,8 @@ package:
   stage: package
   retry: 2
   script:
-    - sbt universal:packageBin
-    - CURYEAR=$(date +%Y)
-    - CURMONTH=$(date +%-m)
-    - echo -n "${CURYEAR}.${CURMONTH}.${BUILD_VERSION}" > VERSION
-    - unzip server/target/universal/*.zip
-    - mv hydra-notifications-server-* hydra-notifications-server
-    - tar czf ${ARTIFACT_NAME}-${BUILD_VERSION}.tgz --exclude=/${ARTIFACT_NAME}-${BUILD_VERSION}.tgz --exclude=*.tmp --exclude=*.tgz --exclude=*.tgz.md5 .
-    - echo "##teamcity[publishArtifacts '${ARTIFACT_NAME}.tgz']"
+    - sbt universal:packageZipTarball
+    - ls -lrt
   artifacts:
     paths:
       - hydra-notifications-server
