@@ -60,7 +60,7 @@ package:
   retry: 2
   script:
     - sbt universal:packageZipTarball
-    - ls -lrt
+    - ls -lrt ./target
   artifacts:
     paths:
       - hydra-notifications-server
