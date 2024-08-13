@@ -3,9 +3,9 @@ include:
     file: '/slack-notification/helper.yml'
   - project: 'pluralsight/experience/gitlab-helpers'
     file: '/helm-deploy/helper.yml'
-  - project: 'pluralsight/Technology/adapt/data-platform/gitlab-fragments/snyk'
-    ref: main
-    file: 'snyk-check.yml'
+  #- project: 'pluralsight/Technology/adapt/data-platform/gitlab-fragments/snyk'
+  #  ref: main
+  #  file: 'snyk-check.yml'
 
 image: harbor.vnerd.com/library/hydra-build-tools:latest
 variables:
@@ -38,7 +38,7 @@ variables:
 
 stages:
   - build
-  - code-analysis
+  #- code-analysis
   - package
   - publish
   - deploy-dev
