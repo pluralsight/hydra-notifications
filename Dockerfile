@@ -14,7 +14,7 @@ EXPOSE $PORT_NUMBER
 RUN ls -lah
 # Copy the application files to the container
 COPY ./target/universal/hydra-notifications-0.1.0.tgz /opt/hydra-notifications-server
-RUN ls -lah
+RUN ls -lah /opt/hydra-notifications-server
 
 # Set the working directory
 WORKDIR /opt/hydra-notifications-server
