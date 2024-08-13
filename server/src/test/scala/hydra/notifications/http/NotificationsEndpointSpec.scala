@@ -30,7 +30,7 @@ class NotificationsEndpointSpec extends FlatSpec
 
     val route = new NotificationsEndpoint(notificationsSupervisor).routes
 
-    val request = Post("/notify/opsgenie?alias=scary_barry&team=team_awesome&tags=tag1,tag2&entity=da_entity&user=chunky_munkey&priority=p1")
+    val request = Post("/notify/opsgenie?alias=scary_barry&team=team_awesome&tags=tag1,tag2&entity=da_entity&user=chunky_munkey&priority=P1")
       .withEntity("""OH NOES OPSGENIE PLS HALP!""".stripMargin)
 
     request ~> route ~> check {
@@ -57,7 +57,7 @@ class NotificationsEndpointSpec extends FlatSpec
 
     val route = new NotificationsEndpoint(notificationsSupervisor).routes
 
-    val request = Post("/notify/opsgenie?alias=scary_barry&team=team_awesome&tags=tag1,tag2&entity=da_entity&user=chunky_munkey&priority=p1")
+    val request = Post("/notify/opsgenie?alias=scary_barry&team=team_awesome&tags=tag1,tag2&entity=da_entity&user=chunky_munkey&priority=P1")
       .withEntity(jsonPayload)
 
     request ~> route ~> check {
@@ -70,7 +70,7 @@ class NotificationsEndpointSpec extends FlatSpec
 
     val route = new NotificationsEndpoint(notificationsSupervisor).routes
 
-    val request = Post("/notify/opsgenie?alias=scary_barry&team=team_awesome&tags=tag1,tag2&entity=da_entity&user=chunky_munkey&priority=p1")
+    val request = Post("/notify/opsgenie?alias=scary_barry&team=team_awesome&tags=tag1,tag2&entity=da_entity&user=chunky_munkey&priority=P1")
       .withEntity(invalidJson)
 
     request ~> route ~> check {
