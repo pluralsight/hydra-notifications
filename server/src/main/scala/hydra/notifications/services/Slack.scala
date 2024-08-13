@@ -37,10 +37,10 @@ class Slack extends Actor with ActorLogging with HydraNotificationService {
 
   private implicit val system = context.system
 
-  override def receive = {
+  override def receive: Receive = {
     case Notify(slack: SlackNotification) =>
       val requestor = sender
-      val response = slackClient.postChatMessage(slack.channel, slack.message).map(NotificationSent(_))
+      val response = slackClient.postChatMessage(slack.channel, slack.message).map(NotificationSent)
         .recover { case e: Exception => NotificationSendError(400, e.getMessage) }
 
       pipe(response) to requestor

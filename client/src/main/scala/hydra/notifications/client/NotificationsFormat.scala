@@ -20,15 +20,24 @@ import spray.json.{DefaultJsonProtocol, JsObject, JsString, JsValue, RootJsonFor
 
 object NotificationsFormat extends DefaultJsonProtocol with SprayJsonSupport {
 
+  implicit val opsGenieFormat: RootJsonFormat[OpsGenieNotification] = jsonFormat(OpsGenieNotification,
+    "message",
+    "priority",
+    "alias",
+    "description",
+    "note",
+    "team",
+    "tags",
+    "entity",
+    "source",
+    "user",
+    "details")
 
-  implicit val opsGenieFormat = jsonFormat(OpsGenieNotification, "message", "alias", "description", "note", "team", "tags", "entity", "source", "user")
+  implicit val slackFormat: RootJsonFormat[SlackNotification] = jsonFormat(SlackNotification, "channel", "message")
 
-  implicit val slackFormat = jsonFormat(SlackNotification, "channel", "message")
+  implicit val notificationsResponseFormat: RootJsonFormat[NotificationsResponse] = jsonFormat2(NotificationsResponse)
 
-  implicit val notificationsResponseFormat = jsonFormat2(NotificationsResponse)
-
-
-  implicit val notificationsFormat = new RootJsonFormat[HydraNotification] {
+  implicit val notificationsFormat: RootJsonFormat[HydraNotification] = new RootJsonFormat[HydraNotification] {
     def write(obj: HydraNotification): JsValue =
       JsObject((obj match {
         case c: OpsGenieNotification => c.toJson

@@ -27,8 +27,8 @@ class NotificationsClient(host: String, port: Int)(implicit sys: ActorSystem) ex
         Uri("/notify/slack").withQuery(query)
       case o: OpsGenieNotification =>
         val query = Query(
+          "priority" -> o.priority.toString,
           "alias" -> o.alias,
-          "description" -> o.description.getOrElse(""),
           "note" -> o.note.getOrElse(""),
           "team" -> o.team,
           "tags" -> o.tags.mkString(","),

@@ -29,10 +29,10 @@ class NotificationsFormatSpec extends Matchers with FunSpecLike {
     }
 
     it("should marshall an opsgenie notification") {
-      val sn: HydraNotification = OpsGenieNotification("message", "alias", Some("description"), Some("note"),
-        "team", Seq("tag1", "tag2"), "entity", Some("source"), "user")
+      val sn: HydraNotification = OpsGenieNotification("message", "P3", "alias", Some("description"), Some("note"),
+        "team", Seq("tag1", "tag2"), "entity", Some("source"), "user", None)
       val expected =
-        """{"source":"source","description":"description","tags":["tag1","tag2"],"service":"opsgenie",
+        """{"source":"source","description":"description","tags":["tag1","tag2"],"priority":"P3","service":"opsgenie",
           |"alias":"alias","note":"note","team":"team","entity":"entity",
           |"message":"message","user":"user"}""".stripMargin.parseJson
       sn.toJson shouldBe expected

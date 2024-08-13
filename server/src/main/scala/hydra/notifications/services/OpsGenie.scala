@@ -22,6 +22,7 @@ import com.ifountain.opsgenie.client.swagger.model.{CreateAlertRequest, Recipien
 import com.typesafe.config.ConfigFactory
 import hydra.notifications._
 import hydra.notifications.client.OpsGenieNotification
+import hydra.notifications.ImplicitConversions._
 
 import scala.collection.JavaConverters._
 import scala.util.Try
@@ -34,7 +35,7 @@ class OpsGenie extends Actor with ActorLogging with HydraNotificationService {
 
   private val client = new OpsGenieClient().alertV2()
 
-  override def preStart(): Unit = client.getApiClient().setApiKey(token)
+  override def preStart(): Unit = client.getApiClient.setApiKey(token)
 
   override def postStop(): Unit = Try(client.getApiClient.getHttpClient.destroy())
 
@@ -51,6 +52,7 @@ class OpsGenie extends Actor with ActorLogging with HydraNotificationService {
   private[services] def alertRequest(n: OpsGenieNotification): CreateAlertRequest = {
     val team = new TeamRecipient().name(n.team)
     val request = new CreateAlertRequest()
+
     request.setMessage(n.message)
     request.setAlias(n.alias)
     n.description.foreach(request.setDescription)
@@ -59,9 +61,10 @@ class OpsGenie extends Actor with ActorLogging with HydraNotificationService {
     request.setTags(n.tags.asJava)
     request.setEntity(n.entity)
     n.source.foreach(request.setSource)
-    request.setPriority(CreateAlertRequest.PriorityEnum.P2)
+    request.setPriority(n.priority)
     request.setUser(n.user)
     n.note.foreach(request.setNote)
+    n.details.map(_.asJava).foreach(request.setDetails)
     request
   }
 }
