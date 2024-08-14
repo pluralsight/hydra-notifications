@@ -63,10 +63,11 @@ object PayloadJsonProtocol extends DefaultJsonProtocol {
 
 object ImplicitConversions {
   implicit def stringToPriority(value: String): PriorityEnum = {
-    if (PriorityEnum.values.map(_.toString).contains(value)) {
-      PriorityEnum.fromValue(value)
+    val priorityString = value.toUpperCase
+    if (PriorityEnum.values.map(_.toString).contains(priorityString)) {
+      PriorityEnum.fromValue(priorityString)
     } else {
-      throw new IllegalArgumentException(s"Invalid priority value. Valid values are: ${PriorityEnum.values().mkString(", ")}")
+      throw new IllegalArgumentException(s"Invalid priority value. Valid values are: ${PriorityEnum.values().mkString(", ")}.")
     }
   }
 }
