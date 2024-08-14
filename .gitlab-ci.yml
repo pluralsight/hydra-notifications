@@ -65,11 +65,11 @@ package:
     - echo -n "${CURYEAR}.${CURMONTH}.${BUILD_VERSION}" > VERSION
     - unzip server/target/universal/*.zip
     - mv hydra-notifications-server-* hydra-notifications-server
-    - tar czf ${ARTIFACT_NAME}-${BUILD_VERSION}.tgz --exclude=/${ARTIFACT_NAME}-${BUILD_VERSION}.tgz --exclude=*.tmp --exclude=*.tgz --exclude=*.tgz.md5 .
-    - echo "##teamcity[publishArtifacts '${ARTIFACT_NAME}.tgz']"
   artifacts:
     paths:
       - hydra-notifications-server
+    expire_in: 1day
+
       
 publish:
   stage: publish

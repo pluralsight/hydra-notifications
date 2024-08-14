@@ -28,7 +28,7 @@ class NotificationsSupervisor(services: Map[String, Props]) extends Actor with A
     serviceActors = services.map(s => s._1 -> context.actorOf(s._2))
   }
 
-  override def receive = {
+  override def receive: Receive = {
     case SendNotification(notification) =>
       serviceActors.get(notification.service) match {
         case Some(actor) => actor forward Notify(notification)

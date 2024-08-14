@@ -16,12 +16,14 @@
 package hydra.notifications.services
 
 import akka.actor.{Actor, ActorLogging}
+import akka.http.scaladsl.model.StatusCodes
 import com.ifountain.opsgenie.client.OpsGenieClient
 import com.ifountain.opsgenie.client.swagger.ApiException
 import com.ifountain.opsgenie.client.swagger.model.{CreateAlertRequest, Recipient, TeamRecipient}
 import com.typesafe.config.ConfigFactory
 import hydra.notifications._
 import hydra.notifications.client.OpsGenieNotification
+import hydra.notifications.ImplicitConversions._
 
 import scala.collection.JavaConverters._
 import scala.util.Try
@@ -34,7 +36,7 @@ class OpsGenie extends Actor with ActorLogging with HydraNotificationService {
 
   private val client = new OpsGenieClient().alertV2()
 
-  override def preStart(): Unit = client.getApiClient().setApiKey(token)
+  override def preStart(): Unit = client.getApiClient.setApiKey(token)
 
   override def postStop(): Unit = Try(client.getApiClient.getHttpClient.destroy())
 
@@ -42,7 +44,11 @@ class OpsGenie extends Actor with ActorLogging with HydraNotificationService {
     case Notify(opsGenie: OpsGenieNotification) =>
       val response = Try(client.createAlert(alertRequest(opsGenie)))
         .map(r => NotificationSent(r.getResult))
-        .recover { case e: ApiException => NotificationSendError(e.getCode, e.getMessage) }
+        .recover {
+          case e: IllegalArgumentException => NotificationSendError(StatusCodes.BadRequest.intValue, e.getMessage)
+          case e: ApiException => NotificationSendError(e.getCode, e.getMessage)
+          case e: Exception => NotificationSendError(StatusCodes.InternalServerError.intValue, e.getMessage)
+        }
         .get
 
       sender ! response
@@ -51,6 +57,7 @@ class OpsGenie extends Actor with ActorLogging with HydraNotificationService {
   private[services] def alertRequest(n: OpsGenieNotification): CreateAlertRequest = {
     val team = new TeamRecipient().name(n.team)
     val request = new CreateAlertRequest()
+
     request.setMessage(n.message)
     request.setAlias(n.alias)
     n.description.foreach(request.setDescription)
@@ -59,9 +66,10 @@ class OpsGenie extends Actor with ActorLogging with HydraNotificationService {
     request.setTags(n.tags.asJava)
     request.setEntity(n.entity)
     n.source.foreach(request.setSource)
-    request.setPriority(CreateAlertRequest.PriorityEnum.P2)
+    request.setPriority(n.priority)
     request.setUser(n.user)
     n.note.foreach(request.setNote)
+    n.details.map(_.asJava).foreach(request.setDetails)
     request
   }
 }
