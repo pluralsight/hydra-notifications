@@ -38,7 +38,7 @@ variables:
 
 stages:
   - build
-  #- code-analysis
+  - code-analysis
   - package
   - publish
   - deploy-dev
@@ -59,12 +59,17 @@ package:
   stage: package
   retry: 2
   script:
-    - sbt universal:packageZipTarball
-    - ls -lrt ./target/universal
+    - sbt universal:packageBin
+    - CURYEAR=$(date +%Y)
+    - CURMONTH=$(date +%-m)
+    - echo -n "${CURYEAR}.${CURMONTH}.${BUILD_VERSION}" > VERSION
+    - unzip server/target/universal/*.zip
+    - mv hydra-notifications-server-* hydra-notifications-server
   artifacts:
     paths:
-      - ${CI_PROJECT_DIR}/target/universal/hydra-notifications-0.1.0.tgz
+      - hydra-notifications-server
     expire_in: 1day
+
       
 publish:
   stage: publish

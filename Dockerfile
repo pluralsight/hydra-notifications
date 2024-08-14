@@ -11,15 +11,12 @@ RUN mkdir -p /var/log/hydra
 # Expose the specified port
 ARG PORT_NUMBER=8080
 EXPOSE $PORT_NUMBER
-RUN ls -lah
 
 # Copy the application files to the container
-ADD ./target/universal/hydra-notifications-*.tgz /opt/hydra-notifications-server
+COPY hydra-notifications-server /opt/hydra-notifications-server
 
 # Set the working directory
 WORKDIR /opt/hydra-notifications-server
-RUN mv /opt/hydra-notifications-server/hydra-notifications-*/* /opt/hydra-notifications-server/hydra-notifications/
-RUN ls -lrt  /opt/hydra-notifications-server/hydra-notifications/
-RUN ls -lrt  /opt/hydra-notifications-server/hydra-notifications/bin/
+
 # Set the entry point for the application
-ENTRYPOINT ["/opt/hydra-notifications-server/hydra-notifications/bin/hydra-notifications-server"]
+ENTRYPOINT ["/opt/hydra-notifications-server/bin/hydra-notifications-server"]
