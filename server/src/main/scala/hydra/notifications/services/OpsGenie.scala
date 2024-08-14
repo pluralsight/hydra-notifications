@@ -16,6 +16,7 @@
 package hydra.notifications.services
 
 import akka.actor.{Actor, ActorLogging}
+import akka.http.scaladsl.model.StatusCodes
 import com.ifountain.opsgenie.client.OpsGenieClient
 import com.ifountain.opsgenie.client.swagger.ApiException
 import com.ifountain.opsgenie.client.swagger.model.{CreateAlertRequest, Recipient, TeamRecipient}
@@ -43,7 +44,11 @@ class OpsGenie extends Actor with ActorLogging with HydraNotificationService {
     case Notify(opsGenie: OpsGenieNotification) =>
       val response = Try(client.createAlert(alertRequest(opsGenie)))
         .map(r => NotificationSent(r.getResult))
-        .recover { case e: ApiException => NotificationSendError(e.getCode, e.getMessage) }
+        .recover {
+          case e: IllegalArgumentException => NotificationSendError(StatusCodes.BadRequest.intValue, e.getMessage)
+          case e: ApiException => NotificationSendError(e.getCode, e.getMessage)
+          case e: Exception => NotificationSendError(StatusCodes.InternalServerError.intValue, e.getMessage)
+        }
         .get
 
       sender ! response
