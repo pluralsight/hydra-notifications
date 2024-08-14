@@ -10,8 +10,8 @@ case class SlackNotification(channel: String, message: String) extends HydraNoti
   override val service = "slack"
 }
 
-
 case class OpsGenieNotification(message: String,
+                                priority: String,
                                 alias: String,
                                 description: Option[String],
                                 note: Option[String],
@@ -19,7 +19,8 @@ case class OpsGenieNotification(message: String,
                                 tags: Seq[String],
                                 entity: String,
                                 source: Option[String],
-                                user: String) extends HydraNotification {
+                                user: String,
+                                details: Option[Map[String, String]]) extends HydraNotification {
 
   override val service = "opsgenie"
 }
