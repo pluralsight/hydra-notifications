@@ -116,7 +116,7 @@ deploy-dev:
       HELM_K8S_CLUSTER_URL: ${K8S_DEV_CLUSTER_URL}
       BOUNDED_CONTEXT: adapt-dvs-dev
       HELM_TARGET_NAMESPACE: ${BOUNDED_CONTEXT}
-      HELM_EXTRA_OPTS: ""
+      HELM_EXTRA_OPTS: "--debug"
       APPLICATION_ROLE: dev-hydra-notifications
       HELM_VALUES_FILE: helm/eks-dev-values.yml
       HELM_SET_VALUES: "NODE_ENV=production, INGEST_URL=https://hydra-publish-dev.eplur-staging.vnerd.com, PUBLIC_URL=https://dvs-dev.eplur-staging.vnerd.com/dvs-data-explorer, REACT_APP_INGEST_URL=https://hydra-publish-dev.eplur-staging.vnerd.com, REACT_APP_STREAMS_URL=https://hydra-streams-dev.eplur-staging.vnerd.com, STREAMS_URL=https://hydra-streams-dev.eplur-staging.vnerd.com"
