@@ -3,7 +3,7 @@ include:
     file: '/slack-notification/helper.yml'
   - project: 'pluralsight/experience/gitlab-helpers'
     file: '/helm-deploy/helper.yml'
-    ref: 0f41899c7d30d341f1edd5fd1f5a99bdbf81956b
+    ref: 98b6412c
   - project: 'pluralsight/Technology/adapt/data-platform/gitlab-fragments/snyk'
     ref: main
     file: 'snyk-check.yml'
@@ -116,11 +116,11 @@ deploy-dev:
       HELM_K8S_CLUSTER_URL: ${K8S_DEV_CLUSTER_URL}
       BOUNDED_CONTEXT: adapt-dvs-dev
       HELM_TARGET_NAMESPACE: ${BOUNDED_CONTEXT}
-      HELM_DEBUG: True
+      HELM_EXTRA_OPTS: ""
       APPLICATION_ROLE: dev-hydra-notifications
       HELM_VALUES_FILE: helm/eks-dev-values.yml
       HELM_SET_VALUES: "NODE_ENV=production, INGEST_URL=https://hydra-publish-dev.eplur-staging.vnerd.com, PUBLIC_URL=https://dvs-dev.eplur-staging.vnerd.com/dvs-data-explorer, REACT_APP_INGEST_URL=https://hydra-publish-dev.eplur-staging.vnerd.com, REACT_APP_STREAMS_URL=https://hydra-streams-dev.eplur-staging.vnerd.com, STREAMS_URL=https://hydra-streams-dev.eplur-staging.vnerd.com"
-      SALT_HELPER_PIN: 0f41899c
+      SALT_HELPER_PIN: 98b6412c
     before_script:
       - echo "Setting the SLACK Token and OPSGENIE Token"
       - sed -i -e "s/%SLACK_TOKEN%/${SLACK_TOKEN}/g" $HELM_VALUES_FILE
