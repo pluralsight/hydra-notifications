@@ -39,7 +39,7 @@ class NotificationsEndpoint(notificationsSupervisor: ActorRef)
 
   implicit val timeout: Timeout = Timeout(5.seconds)
 
-  private def combinedRoute(supervisor: ActorRef) =
+  def combinedRoute(supervisor: ActorRef): Route =
     post {
       path("notify" / "opsgenie") {
         entity(as[String]) { message =>
@@ -53,12 +53,18 @@ class NotificationsEndpoint(notificationsSupervisor: ActorRef)
 
               val (title, details, description) = payload match {
                 case MessageString(value)      => (value, None, None)
-                case MessageJson(notification) => (notification.message, Option(notification.properties), notification.properties.get("description"))
+                case MessageJson(notification) =>
+                  (
+                    notification.message,
+                    // Remove description from details as it is stored in its dedicated field in OpsGenieNotification.
+                    Option(notification.properties.filterKeys(!_.equals("description"))),
+                    notification.properties.get("description")
+                  )
               }
 
-              val notification = OpsGenieNotification(title, priority, alias, description, noteOpt, team, tags, entity, sourceOpt, user, details)
+              val opsGenieNotification = OpsGenieNotification(title, priority, alias, description, noteOpt, team, tags, entity, sourceOpt, user, details)
 
-              notify(supervisor, notification)
+              notify(supervisor, opsGenieNotification)
             } catch {
               case ex: DeserializationException => complete(StatusCodes.BadRequest, ex.getMessage)
             }
