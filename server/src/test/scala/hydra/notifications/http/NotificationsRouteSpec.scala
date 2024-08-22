@@ -13,8 +13,6 @@ import scala.concurrent.duration._
 
 class NotificationsRouteSpec extends FunSpecLike with Matchers with ScalatestRouteTest with MockFactory {
 
-  implicit val timeout: RouteTestTimeout = RouteTestTimeout(10.seconds)
-
   class TestNotificationsEndpoint(supervisor: ActorRef) extends NotificationsEndpoint(supervisor)
 
   describe("The opsgenie notifications route") {
