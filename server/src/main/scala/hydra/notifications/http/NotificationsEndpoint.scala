@@ -28,6 +28,7 @@ import hydra.notifications.client.{HydraNotification, NotificationsResponse, Ops
 import hydra.notifications.services.NotificationsSupervisor.{GetServiceList, SendNotification, ServiceList, ServiceNotFound}
 import spray.json.DefaultJsonProtocol
 import hydra.notifications.PayloadJsonProtocol._
+import hydra.notifications.converters.{Converter, CsvToHtmlConverter}
 
 import scala.concurrent.duration._
 import spray.json._
@@ -39,26 +40,18 @@ class NotificationsEndpoint(notificationsSupervisor: ActorRef)
 
   implicit val timeout: Timeout = Timeout(5.seconds)
 
-  private def combinedRoute(supervisor: ActorRef) =
+  def combinedRoute(supervisor: ActorRef): Route =
     post {
       path("notify" / "opsgenie") {
         entity(as[String]) { message =>
           parameters('priority, 'alias, 'note.?, 'team, "tags".as(CsvSeq[String]), 'entity,
             'source.?, 'user) { (priority, alias, noteOpt, team, tags, entity, sourceOpt, user) =>
             try {
-              val payload: Payload = Try(message.parseJson) match {
-                case util.Success(json) => json.convertTo[Payload] // Convert to Payload if valid JSON
-                case util.Failure(_)    => MessageString(message) // Handle as plain string if not valid JSON
-              }
+              val payload = extractPayload(message)
+              val (title, description, details) = extractData(payload)
+              val opsGenieNotification = OpsGenieNotification(title, priority, alias, description, noteOpt, team, tags, entity, sourceOpt, user, details)
 
-              val (title, details, description) = payload match {
-                case MessageString(value)      => (value, None, None)
-                case MessageJson(notification) => (notification.message, Option(notification.properties), notification.properties.get("description"))
-              }
-
-              val notification = OpsGenieNotification(title, priority, alias, description, noteOpt, team, tags, entity, sourceOpt, user, details)
-
-              notify(supervisor, notification)
+              notify(supervisor, opsGenieNotification)
             } catch {
               case ex: DeserializationException => complete(StatusCodes.BadRequest, ex.getMessage)
             }
@@ -93,6 +86,34 @@ class NotificationsEndpoint(notificationsSupervisor: ActorRef)
       case NotificationSent(message) => complete(OK, NotificationsResponse(200, message))
       case ServiceNotFound(s) => complete(NotFound, NotificationsResponse(404, s"Service $s not found."))
       case NotificationSendError(code, error) => complete(code, NotificationsResponse(code, error))
+    }
+  }
+
+  private def extractPayload(message: String): Payload = Try(message.parseJson) match {
+    case util.Success(json) => json.convertTo[Payload] // Convert to Payload if valid JSON
+    case util.Failure(_) => MessageString(message) // Handle as plain string if not valid JSON
+  }
+
+  private def extractData(payload: Payload): (String, Option[String], Option[Map[String, String]]) = {
+    implicit class RichSet[A](set: Set[A]) {
+      def containsNot(elem: A): Boolean = !set.contains(elem)
+    }
+
+    payload match {
+      case MessageString(value) => (value, None, None)
+      case MessageJson(notification) =>
+        val (csvProperties, properties) = notification.properties.partition { case (_, value) =>
+          CsvToHtmlConverter.isCsv(Converter.unescape(value))
+        }
+
+        val htmlProperties = csvProperties.mapValues(v => CsvToHtmlConverter.convertToHtml(Converter.unescape(v)))
+        val filterKeys = htmlProperties.keySet ++ Set("description")
+
+        (
+          notification.message,
+          notification.properties.get("description").map(Converter.unescape),
+          Option(properties.filterKeys(filterKeys.containsNot) ++ htmlProperties)
+        )
     }
   }
 }
