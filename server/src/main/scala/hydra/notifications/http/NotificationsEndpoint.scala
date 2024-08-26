@@ -29,6 +29,7 @@ import hydra.notifications.services.NotificationsSupervisor.{GetServiceList, Sen
 import spray.json.DefaultJsonProtocol
 import hydra.notifications.PayloadJsonProtocol._
 import hydra.notifications.converters.{Converter, CsvToHtmlConverter}
+import org.slf4j.LoggerFactory
 
 import scala.concurrent.duration._
 import spray.json._
@@ -39,6 +40,7 @@ class NotificationsEndpoint(notificationsSupervisor: ActorRef)
   extends Directives with SprayJsonSupport with DefaultJsonProtocol {
 
   implicit val timeout: Timeout = Timeout(5.seconds)
+  private val logger = LoggerFactory.getLogger(this.getClass)
 
   def combinedRoute(supervisor: ActorRef): Route =
     post {
@@ -47,6 +49,7 @@ class NotificationsEndpoint(notificationsSupervisor: ActorRef)
           parameters('priority, 'alias, 'note.?, 'team, "tags".as(CsvSeq[String]), 'entity,
             'source.?, 'user) { (priority, alias, noteOpt, team, tags, entity, sourceOpt, user) =>
             try {
+              logger.info(s"Payload: $message")
               val payload = extractPayload(message)
               val (title, description, details) = extractData(payload)
               val opsGenieNotification = OpsGenieNotification(title, priority, alias, description, noteOpt, team, tags, entity, sourceOpt, user, details)

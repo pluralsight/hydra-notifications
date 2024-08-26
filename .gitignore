@@ -60,6 +60,7 @@ build.properties
 *.db
 
 #Logs
+logs/
 *.log
 *.log.*ndjson
 /api/.idea/
