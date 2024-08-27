@@ -206,6 +206,35 @@ deploy-production:
       - kubectl config set-context deploy --cluster=app-${CI_ENVIRONMENT_NAME%/*} --namespace=${HELM_TARGET_NAMESPACE} --user=deploy
       - kubectl config use-context deploy
 
+promote-deployed-image:
+  stage: deploy-production
+  when: manual
+  environment:
+    name: production
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master"
+      when: manual 
+    - when: never
+  image: harbor.vnerd.com/proxy/library/docker:cli
+  tags:
+    - ps
+    - docker
+  needs:
+    - deploy-production
+  before_script:
+    - echo "$DOCKER_REGISTRY_USERNAME:$DOCKER_REGISTRY_PASSWORD"
+    - echo -n "$DOCKER_REGISTRY_PASSWORD" | docker login -u "$DOCKER_REGISTRY_USERNAME" --password-stdin "$DOCKER_REGISTRY_URL"
+    - apk add libstdc++ curl 
+  script:
+    - docker pull ${DOCKER_REGISTRY_IMAGE}:${HYDRA_NOTIFICATION_BUILD_VERSION}
+    - docker tag ${DOCKER_REGISTRY_IMAGE}:${HYDRA_NOTIFICATION_BUILD_VERSION} ${DOCKER_REGISTRY_IMAGE}:latest
+    - docker push ${DOCKER_REGISTRY_IMAGE}:latest
+  variables:
+    DOCKER_HOST: tcp://localhost:2376
+    DOCKER_TLS_CERTDIR: "/certs"
+    DOCKER_CERT_PATH: "$DOCKER_TLS_CERTDIR/client"
+    DOCKER_TLS_VERIFY: 1
+
 slack:production:
   stage: notify_production
   extends: .notify-all
