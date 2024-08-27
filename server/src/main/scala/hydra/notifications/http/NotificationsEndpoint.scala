@@ -54,8 +54,7 @@ class NotificationsEndpoint(notificationsSupervisor: ActorRef)
               val (title, description, details) = extractData(payload)
               val opsGenieNotification = OpsGenieNotification(title, priority, alias, description, noteOpt, team, tags, entity, sourceOpt, user, details)
 
-//              notify(supervisor, opsGenieNotification)
-              complete(OK, s"$message") // TODO: Added for testing. Remove later. Not invoking opsgenie API.
+              notify(supervisor, opsGenieNotification)
             } catch {
               case ex: DeserializationException => complete(StatusCodes.BadRequest, ex.getMessage)
             }

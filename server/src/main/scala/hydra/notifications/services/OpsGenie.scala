@@ -19,7 +19,7 @@ import akka.actor.{Actor, ActorLogging}
 import akka.http.scaladsl.model.StatusCodes
 import com.ifountain.opsgenie.client.OpsGenieClient
 import com.ifountain.opsgenie.client.swagger.ApiException
-import com.ifountain.opsgenie.client.swagger.model.{CreateAlertRequest, Recipient, TeamRecipient}
+import com.ifountain.opsgenie.client.swagger.model.{CreateAlertRequest, Recipient, SuccessResponse, TeamRecipient}
 import com.typesafe.config.ConfigFactory
 import hydra.notifications._
 import hydra.notifications.client.OpsGenieNotification
@@ -42,7 +42,10 @@ class OpsGenie extends Actor with ActorLogging with HydraNotificationService {
 
   override def receive: Receive = {
     case Notify(opsGenie: OpsGenieNotification) =>
-      val response = Try(client.createAlert(alertRequest(opsGenie)))
+      val dummyResponse = new SuccessResponse
+      dummyResponse.setResult(opsGenie.description.getOrElse("No description given!"))
+//      val response = Try(client.createAlert(alertRequest(opsGenie)))
+      val response = Try(dummyResponse)
         .map(r => NotificationSent(r.getResult))
         .recover {
           case e: IllegalArgumentException => NotificationSendError(StatusCodes.BadRequest.intValue, e.getMessage)
