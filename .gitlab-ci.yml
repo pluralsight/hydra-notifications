@@ -123,8 +123,6 @@ deploy-dev:
       - sed -i -e "s/%BUILD_VERSION%/${BUILD_VERSION}/g" $HELM_VALUES_FILE
       - sed -i -e "s/%SLACK_TOKEN%/${SLACK_TOKEN}/g" $HELM_VALUES_FILE
       - sed -i -e "s/%OPSGENIE_TOKEN%/${OPSGENIE_TOKEN}/g" $HELM_VALUES_FILE
-      - cat $HELM_VALUES_FILE
-      - export BUILD_VERSION="$(date +%Y).$(date +%m).$(date +%d).${CI_COMMIT_SHORT_SHA}"
       - kubectl config set-cluster app-${CI_ENVIRONMENT_NAME%/*} --server=${HELM_K8S_CLUSTER_URL} --embed-certs --certificate-authority="$HELM_DEV_K8S_CLUSTER_CACERT"
       - kubectl config set-credentials deploy --token=`echo ${HELM_DEPLOY_TOKEN} | base64 -d`
       - kubectl config set-context deploy --cluster=app-${CI_ENVIRONMENT_NAME%/*} --namespace=${HELM_TARGET_NAMESPACE} --user=deploy
@@ -162,7 +160,6 @@ deploy-staging:
       - sed -i -e "s/%SLACK_TOKEN%/${SLACK_TOKEN}/g" $HELM_VALUES_FILE
       - sed -i -e "s/%BUILD_VERSION%/${BUILD_VERSION}/g" $HELM_VALUES_FILE
       - sed -i -e "s/%OPSGENIE_TOKEN%/${OPSGENIE_TOKEN}/g" $HELM_VALUES_FILE
-      - export BUILD_VERSION="$(date +%Y).$(date +%m).$(date +%d).${CI_COMMIT_SHORT_SHA}"
       - kubectl config set-cluster app-${CI_ENVIRONMENT_NAME%/*} --server=${HELM_K8S_CLUSTER_URL} --embed-certs --certificate-authority="$HELM_STAGE_K8S_CLUSTER_CACERT"
       - kubectl config set-credentials deploy --token=`echo ${HELM_DEPLOY_TOKEN} | base64 -d`
       - kubectl config set-context deploy --cluster=app-${CI_ENVIRONMENT_NAME%/*} --namespace=${HELM_TARGET_NAMESPACE} --user=deploy
@@ -204,7 +201,6 @@ deploy-production:
       - sed -i -e "s/%SLACK_TOKEN%/${SLACK_TOKEN}/g" $HELM_VALUES_FILE
       - sed -i -e "s/%BUILD_VERSION%/${BUILD_VERSION}/g" $HELM_VALUES_FILE
       - sed -i -e "s/%OPSGENIE_TOKEN%/${OPSGENIE_TOKEN}/g" $HELM_VALUES_FILE
-      - export BUILD_VERSION="$(date +%Y).$(date +%m).$(date +%d).${CI_COMMIT_SHORT_SHA}"
       - kubectl config set-cluster app-${CI_ENVIRONMENT_NAME%/*} --server=${HELM_K8S_CLUSTER_URL} --embed-certs --certificate-authority="$HELM_PROD_K8S_CLUSTER_CACERT"
       - kubectl config set-credentials deploy --token=`echo ${HELM_DEPLOY_TOKEN} | base64 -d`
       - kubectl config set-context deploy --cluster=app-${CI_ENVIRONMENT_NAME%/*} --namespace=${HELM_TARGET_NAMESPACE} --user=deploy
