@@ -47,10 +47,7 @@ class OpsGenie extends Actor with ActorLogging with HydraNotificationService {
     case Notify(opsGenie: OpsGenieNotification) =>
 
       logger.info("OpsGenie alert will be triggered.")
-      val dummyResponse = new SuccessResponse
-      dummyResponse.setResult(opsGenie.description.getOrElse("No description given!"))
-//      val response = Try(client.createAlert(alertRequest(opsGenie)))
-      val response = Try(dummyResponse)
+      val response = Try(client.createAlert(alertRequest(opsGenie)))
         .map(r => NotificationSent(r.getResult))
         .recover {
           case e: IllegalArgumentException => NotificationSendError(StatusCodes.BadRequest.intValue, e.getMessage)
