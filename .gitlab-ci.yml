@@ -138,6 +138,13 @@ slack:dev:
   variables:
     ENV: "DEV Cluster"
     SERVICE_NAME: "dev-hydra-notifications"
+    SLACK_MESSAGE: |
+          *[[SERVICE_NAME]]* deployed to *[[ENV]] Cluster* 
+          Branch: ${CI_COMMIT_BRANCH}
+          Version: ${STREAMS_BUILD_VERSION}
+          URL: https://hydra-streams-dev.eplur-staging.vnerd.com/
+          [[PIPELINE_LINK]]
+
 
 deploy-staging:
     stage: deploy-staging
@@ -175,6 +182,13 @@ slack:staging:
   variables:
     ENV: "STAGING Cluster"
     SERVICE_NAME: "is-hydra-notifications"
+    SLACK_MESSAGE: |
+          *[[SERVICE_NAME]]* deployed to *[[ENV]] Cluster* 
+          Branch: ${CI_COMMIT_BRANCH}
+          Version: ${STREAMS_BUILD_VERSION}
+          URL: https://hydra-streams-dev.eplur-staging.vnerd.com/
+          [[PIPELINE_LINK]]
+
 
 deploy-production:
     stage: deploy-production
@@ -249,3 +263,10 @@ slack:production:
   variables:
     ENV: "Production Cluster"
     SERVICE_NAME: "ip-hydra-notifications"
+    SLACK_MESSAGE: |
+          *[[SERVICE_NAME]]* deployed to *[[ENV]] Cluster* 
+          Branch: ${CI_COMMIT_BRANCH}
+          Version: ${STREAMS_BUILD_VERSION}
+          URL: https://hydra-streams-dev.eplur-staging.vnerd.com/
+          [[PIPELINE_LINK]]
+
