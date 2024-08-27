@@ -1,7 +1,7 @@
 image:
   repository: harbor.vnerd.com/library/hydra-notifications
   pullPolicy: Always
-  tag: latest
+  tag: %BUILD_VERSION%
 
 serviceAccount:
   create: true

@@ -55,17 +55,9 @@ build:
   script:
     - sbt clean compile test
 
-      
-publish:
-  stage: publish
-  image: harbor.vnerd.com/proxy/library/docker:cli
-  tags:
-    - ps
-    - docker
-  before_script:
-    - echo "$DOCKER_REGISTRY_USERNAME:$DOCKER_REGISTRY_PASSWORD"
-    - echo -n "$DOCKER_REGISTRY_PASSWORD" | docker login -u "$DOCKER_REGISTRY_USERNAME" --password-stdin "$DOCKER_REGISTRY_URL"
-    - apk add libstdc++ curl 
+package:
+  stage: package
+  retry: 2
   script:
     - sbt universal:packageBin
     - CURYEAR=$(date +%Y)
@@ -73,6 +65,25 @@ publish:
     - echo -n "${CURYEAR}.${CURMONTH}.${BUILD_VERSION}" > VERSION
     - unzip server/target/universal/*.zip
     - mv hydra-notifications-server-* hydra-notifications-server
+  artifacts:
+    paths:
+      - hydra-notifications-server
+    expire_in: 1day
+
+      
+publish:
+  stage: publish
+  image: harbor.vnerd.com/proxy/library/docker:cli
+  tags:
+    - ps
+    - docker
+  needs:
+    - package
+  before_script:
+    - echo "$DOCKER_REGISTRY_USERNAME:$DOCKER_REGISTRY_PASSWORD"
+    - echo -n "$DOCKER_REGISTRY_PASSWORD" | docker login -u "$DOCKER_REGISTRY_USERNAME" --password-stdin "$DOCKER_REGISTRY_URL"
+    - apk add libstdc++ curl 
+  script:
     - docker build -t ${IMAGE_NAME} -f Dockerfile .
     - docker tag ${IMAGE_NAME} ${DOCKER_REGISTRY_IMAGE}:${BUILD_VERSION}
     - docker push ${DOCKER_REGISTRY_IMAGE}:${BUILD_VERSION}
@@ -109,6 +120,7 @@ deploy-dev:
       HELM_SET_VALUES: "NODE_ENV=production, INGEST_URL=https://hydra-publish-dev.eplur-staging.vnerd.com, PUBLIC_URL=https://dvs-dev.eplur-staging.vnerd.com/dvs-data-explorer, REACT_APP_INGEST_URL=https://hydra-publish-dev.eplur-staging.vnerd.com, REACT_APP_STREAMS_URL=https://hydra-streams-dev.eplur-staging.vnerd.com, STREAMS_URL=https://hydra-streams-dev.eplur-staging.vnerd.com"
     before_script:
       - echo "Setting the SLACK Token and OPSGENIE Token"
+      - sed -i -e "s/%BUILD_VERSION%/${BUILD_VERSION}/g" $HELM_VALUES_FILE
       - sed -i -e "s/%SLACK_TOKEN%/${SLACK_TOKEN}/g" $HELM_VALUES_FILE
       - sed -i -e "s/%OPSGENIE_TOKEN%/${OPSGENIE_TOKEN}/g" $HELM_VALUES_FILE
       - export BUILD_VERSION="$(date +%Y).$(date +%m).$(date +%d).${CI_COMMIT_SHORT_SHA}"
@@ -147,6 +159,7 @@ deploy-staging:
     before_script:
       - echo "Setting the SLACK Token and OPSGENIE Token"
       - sed -i -e "s/%SLACK_TOKEN%/${SLACK_TOKEN}/g" $HELM_VALUES_FILE
+      - sed -i -e "s/%BUILD_VERSION%/${BUILD_VERSION}/g" $HELM_VALUES_FILE
       - sed -i -e "s/%OPSGENIE_TOKEN%/${OPSGENIE_TOKEN}/g" $HELM_VALUES_FILE
       - export BUILD_VERSION="$(date +%Y).$(date +%m).$(date +%d).${CI_COMMIT_SHORT_SHA}"
       - kubectl config set-cluster app-${CI_ENVIRONMENT_NAME%/*} --server=${HELM_K8S_CLUSTER_URL} --embed-certs --certificate-authority="$HELM_STAGE_K8S_CLUSTER_CACERT"
@@ -188,6 +201,7 @@ deploy-production:
     before_script:
       - echo "Setting the SLACK Token and OPSGENIE Token"
       - sed -i -e "s/%SLACK_TOKEN%/${SLACK_TOKEN}/g" $HELM_VALUES_FILE
+      - sed -i -e "s/%BUILD_VERSION%/${BUILD_VERSION}/g" $HELM_VALUES_FILE
       - sed -i -e "s/%OPSGENIE_TOKEN%/${OPSGENIE_TOKEN}/g" $HELM_VALUES_FILE
       - export BUILD_VERSION="$(date +%Y).$(date +%m).$(date +%d).${CI_COMMIT_SHORT_SHA}"
       - kubectl config set-cluster app-${CI_ENVIRONMENT_NAME%/*} --server=${HELM_K8S_CLUSTER_URL} --embed-certs --certificate-authority="$HELM_PROD_K8S_CLUSTER_CACERT"
