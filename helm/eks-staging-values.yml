@@ -56,7 +56,7 @@ secret:
   
 config:
   LOG_DIR: /var/log/hydra-notifications
-  LOG_LEVEL: ERROR
+  LOG_LEVEL: INFO
   PORT_NUMBER: 8080
   SLACK_TOKEN: 
   OPSGENIE_TOKEN: 
