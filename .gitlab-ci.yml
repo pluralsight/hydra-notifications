@@ -55,21 +55,6 @@ build:
   script:
     - sbt clean compile test
 
-package:
-  stage: package
-  retry: 2
-  script:
-    - sbt universal:packageBin
-    - CURYEAR=$(date +%Y)
-    - CURMONTH=$(date +%-m)
-    - echo -n "${CURYEAR}.${CURMONTH}.${BUILD_VERSION}" > VERSION
-    - unzip server/target/universal/*.zip
-    - mv hydra-notifications-server-* hydra-notifications-server
-  artifacts:
-    paths:
-      - hydra-notifications-server
-    expire_in: 1day
-
       
 publish:
   stage: publish
@@ -84,6 +69,12 @@ publish:
     - echo -n "$DOCKER_REGISTRY_PASSWORD" | docker login -u "$DOCKER_REGISTRY_USERNAME" --password-stdin "$DOCKER_REGISTRY_URL"
     - apk add libstdc++ curl 
   script:
+    - sbt universal:packageBin
+    - CURYEAR=$(date +%Y)
+    - CURMONTH=$(date +%-m)
+    - echo -n "${CURYEAR}.${CURMONTH}.${BUILD_VERSION}" > VERSION
+    - unzip server/target/universal/*.zip
+    - mv hydra-notifications-server-* hydra-notifications-server
     - docker build -t ${IMAGE_NAME} -f Dockerfile .
     - docker tag ${IMAGE_NAME} ${DOCKER_REGISTRY_IMAGE}:${BUILD_VERSION}
     - docker push ${DOCKER_REGISTRY_IMAGE}:${BUILD_VERSION}
