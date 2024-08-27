@@ -16,10 +16,10 @@ variables:
   ARTIFACTORY_REPOSITORY_URL: https://repository.vnerd.com/artifactory
   ARTIFACTORY_REPOSITORY: bounded-context
   ARTIFACTORY_ID: hydra/notifications
-  ARTIFACTORY_ARTIFACT_VERSION: ${ARTIFACT_NAME}-${BUILD_VERSION}.tgz
+  ARTIFACTORY_ARTIFACT_VERSION: ${ARTIFACT_NAME}-${HYDRA_NOTIFICATION_BUILD_VERSION}.tgz
   ARTIFACTORY_PATH: ${ARTIFACTORY_ID}/${ARTIFACTORY_ARTIFACT_VERSION}
   ARTIFACTORY_ARTIFACT_URL: ${ARTIFACTORY_REPOSITORY_URL}/${ARTIFACTORY_REPOSITORY}/${ARTIFACTORY_PATH}
-  BUILD_VERSION: 1.0.${CI_PIPELINE_IID}
+  HYDRA_NOTIFICATION_BUILD_VERSION: 1.0.${CI_PIPELINE_IID}
   ENV: ${CI_JOB_STAGE} 
   SERVICE_NAME: "hydra-notifications"
   SLACK_ICON_EMOJI: ":gitlab:"
@@ -62,7 +62,7 @@ package:
     - sbt universal:packageBin
     - CURYEAR=$(date +%Y)
     - CURMONTH=$(date +%-m)
-    - echo -n "${CURYEAR}.${CURMONTH}.${BUILD_VERSION}" > VERSION
+    - echo -n "${CURYEAR}.${CURMONTH}.${HYDRA_NOTIFICATION_BUILD_VERSION}" > VERSION
     - unzip server/target/universal/*.zip
     - mv hydra-notifications-server-* hydra-notifications-server
   artifacts:
@@ -85,8 +85,8 @@ publish:
     - apk add libstdc++ curl 
   script:
     - docker build -t ${IMAGE_NAME} -f Dockerfile .
-    - docker tag ${IMAGE_NAME} ${DOCKER_REGISTRY_IMAGE}:${BUILD_VERSION}
-    - docker push ${DOCKER_REGISTRY_IMAGE}:${BUILD_VERSION}
+    - docker tag ${IMAGE_NAME} ${DOCKER_REGISTRY_IMAGE}:${HYDRA_NOTIFICATION_BUILD_VERSION}
+    - docker push ${DOCKER_REGISTRY_IMAGE}:${HYDRA_NOTIFICATION_BUILD_VERSION}
   variables:
     DOCKER_HOST: tcp://localhost:2376
     DOCKER_TLS_CERTDIR: "/certs"
@@ -120,7 +120,7 @@ deploy-dev:
       HELM_SET_VALUES: "NODE_ENV=production, INGEST_URL=https://hydra-publish-dev.eplur-staging.vnerd.com, PUBLIC_URL=https://dvs-dev.eplur-staging.vnerd.com/dvs-data-explorer, REACT_APP_INGEST_URL=https://hydra-publish-dev.eplur-staging.vnerd.com, REACT_APP_STREAMS_URL=https://hydra-streams-dev.eplur-staging.vnerd.com, STREAMS_URL=https://hydra-streams-dev.eplur-staging.vnerd.com"
     before_script:
       - echo "Setting the SLACK Token and OPSGENIE Token"
-      - sed -i -e "s/%BUILD_VERSION%/${BUILD_VERSION}/g" $HELM_VALUES_FILE
+      - sed -i -e "s/%BUILD_VERSION%/${HYDRA_NOTIFICATION_BUILD_VERSION}/g" $HELM_VALUES_FILE
       - sed -i -e "s/%SLACK_TOKEN%/${SLACK_TOKEN}/g" $HELM_VALUES_FILE
       - sed -i -e "s/%OPSGENIE_TOKEN%/${OPSGENIE_TOKEN}/g" $HELM_VALUES_FILE
       - kubectl config set-cluster app-${CI_ENVIRONMENT_NAME%/*} --server=${HELM_K8S_CLUSTER_URL} --embed-certs --certificate-authority="$HELM_DEV_K8S_CLUSTER_CACERT"
@@ -158,7 +158,7 @@ deploy-staging:
     before_script:
       - echo "Setting the SLACK Token and OPSGENIE Token"
       - sed -i -e "s/%SLACK_TOKEN%/${SLACK_TOKEN}/g" $HELM_VALUES_FILE
-      - sed -i -e "s/%BUILD_VERSION%/${BUILD_VERSION}/g" $HELM_VALUES_FILE
+      - sed -i -e "s/%BUILD_VERSION%/${HYDRA_NOTIFICATION_BUILD_VERSION}/g" $HELM_VALUES_FILE
       - sed -i -e "s/%OPSGENIE_TOKEN%/${OPSGENIE_TOKEN}/g" $HELM_VALUES_FILE
       - kubectl config set-cluster app-${CI_ENVIRONMENT_NAME%/*} --server=${HELM_K8S_CLUSTER_URL} --embed-certs --certificate-authority="$HELM_STAGE_K8S_CLUSTER_CACERT"
       - kubectl config set-credentials deploy --token=`echo ${HELM_DEPLOY_TOKEN} | base64 -d`
@@ -199,7 +199,7 @@ deploy-production:
     before_script:
       - echo "Setting the SLACK Token and OPSGENIE Token"
       - sed -i -e "s/%SLACK_TOKEN%/${SLACK_TOKEN}/g" $HELM_VALUES_FILE
-      - sed -i -e "s/%BUILD_VERSION%/${BUILD_VERSION}/g" $HELM_VALUES_FILE
+      - sed -i -e "s/%BUILD_VERSION%/${HYDRA_NOTIFICATION_BUILD_VERSION}/g" $HELM_VALUES_FILE
       - sed -i -e "s/%OPSGENIE_TOKEN%/${OPSGENIE_TOKEN}/g" $HELM_VALUES_FILE
       - kubectl config set-cluster app-${CI_ENVIRONMENT_NAME%/*} --server=${HELM_K8S_CLUSTER_URL} --embed-certs --certificate-authority="$HELM_PROD_K8S_CLUSTER_CACERT"
       - kubectl config set-credentials deploy --token=`echo ${HELM_DEPLOY_TOKEN} | base64 -d`
