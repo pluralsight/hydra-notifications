@@ -16,7 +16,6 @@
 package hydra.notifications
 
 import java.lang.reflect.Modifier
-
 import akka.actor.{ActorSystem, Props}
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.RouteConcatenation
@@ -25,11 +24,13 @@ import hydra.notifications.http.{HealthEndpoint, NotificationsEndpoint}
 import hydra.notifications.services.NotificationsSupervisor
 import org.apache.commons.lang3.ClassUtils
 import org.reflections.Reflections
+import org.slf4j.LoggerFactory
 
 object NotificationsService extends App with RouteConcatenation {
 
-
   implicit val system = ActorSystem()
+
+  private val logger = LoggerFactory.getLogger(this.getClass)
 
   private val config = ConfigFactory.load
 
@@ -41,6 +42,8 @@ object NotificationsService extends App with RouteConcatenation {
   val routes = HealthEndpoint.routes ~ new NotificationsEndpoint(notificationsSupervisor).routes
 
   val server = Http().bindAndHandle(routes, "0.0.0.0", httpPort)
+
+  logger.info("Notification server started.")
 
   private def notificationServices: Map[String, Props] = {
     import scala.collection.JavaConverters._

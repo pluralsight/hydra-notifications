@@ -24,11 +24,14 @@ import com.typesafe.config.ConfigFactory
 import hydra.notifications._
 import hydra.notifications.client.OpsGenieNotification
 import hydra.notifications.ImplicitConversions._
+import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConverters._
 import scala.util.Try
 
 class OpsGenie extends Actor with ActorLogging with HydraNotificationService {
+
+  private val logger = LoggerFactory.getLogger(this.getClass)
 
   private val config = ConfigFactory.load()
 
@@ -42,6 +45,8 @@ class OpsGenie extends Actor with ActorLogging with HydraNotificationService {
 
   override def receive: Receive = {
     case Notify(opsGenie: OpsGenieNotification) =>
+
+      logger.info("OpsGenie alert will be triggered.")
       val dummyResponse = new SuccessResponse
       dummyResponse.setResult(opsGenie.description.getOrElse("No description given!"))
 //      val response = Try(client.createAlert(alertRequest(opsGenie)))
