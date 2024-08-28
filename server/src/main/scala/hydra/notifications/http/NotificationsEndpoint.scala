@@ -118,12 +118,12 @@ class NotificationsEndpoint(notificationsSupervisor: ActorRef)
         val htmlProperties = updatedCsvProperties mapValues { v =>
           CsvConverter.convertToHtml(Converter.unescape(v))
         }
-        val filterKeys = htmlProperties.keySet.filter(_.equals(descriptionKey))
+        val filterKeys = htmlProperties.keySet ++ Set(descriptionKey)
 
         (
           notification.message,
-          htmlProperties.get(descriptionKey),
-          Option(properties.filterKeys(filterKeys.containsNot) ++ updatedCsvProperties.filterKeys(_.equals(descriptionKey)))
+          htmlProperties.get(descriptionKey).orElse(properties.get(descriptionKey)),
+          Option(properties.filterKeys(filterKeys.containsNot) ++ htmlProperties ++ updatedCsvProperties.filterKeys(_.equals(descriptionKey)))
         )
     }
   }
