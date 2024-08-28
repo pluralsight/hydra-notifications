@@ -110,18 +110,20 @@ class NotificationsEndpoint(notificationsSupervisor: ActorRef)
         }
 
         val descriptionKey = "description"
-        // Extract topic-wise csv Map from description
-        val topicWiseDescriptionProperties = csvProperties.get(descriptionKey).map(CsvConverter.splitTopicWise).getOrElse(Map.empty)
-        val allCsvProperties = csvProperties.filterKeys(!_.equals(descriptionKey)) ++ topicWiseDescriptionProperties
-        val htmlProperties = allCsvProperties mapValues { v =>
+        // Group jobs topic-wise
+        val updatedCsvProperties = csvProperties.get(descriptionKey) match {
+          case Some(value) => csvProperties.updated(descriptionKey, CsvConverter.groupTopicWise(value).getOrElse(value))
+          case None        => csvProperties
+        }
+        val htmlProperties = updatedCsvProperties mapValues { v =>
           CsvConverter.convertToHtml(Converter.unescape(v))
         }
-        val filterKeys = htmlProperties.keySet ++ Set(descriptionKey)
+        val filterKeys = htmlProperties.keySet.filter(_.equals(descriptionKey))
 
         (
           notification.message,
-          notification.properties.get(descriptionKey).map(Converter.unescape),
-          Option(properties.filterKeys(filterKeys.containsNot) ++ htmlProperties)
+          htmlProperties.get(descriptionKey),
+          Option(properties.filterKeys(filterKeys.containsNot) ++ updatedCsvProperties.filterKeys(_.equals(descriptionKey)))
         )
     }
   }

@@ -61,7 +61,7 @@ object CsvConverter extends Converter {
     htmlString.replaceAll("\\n\\s*", "")
   }
 
-  def splitTopicWise(csvString: String): Map[String, String] = {
+  def groupTopicWise(csvString: String): Option[String] = {
     val lines = csvString.split("\n").toList
     val headers = lines.head.split(",").map(_.trim)
     val dataRows = lines.tail
@@ -73,16 +73,15 @@ object CsvConverter extends Converter {
       // Group the data rows by the "topics" column
       val groupedData: Map[String, List[List[String]]] = dataRows.map(_.split(",").toList).groupBy(_(topicsIndex))
 
-      // Generate the Map[String, String] where the key is the topic and the value is the CSV string
-      val result: Map[String, String] = groupedData.map {
-        case (topic, rows) =>
-          val csvRows = rows.map(_.mkString(",")).mkString("\n")
-          topic -> (headers.mkString(",") + "\n" + csvRows)
-      }
+      // Flatten the grouped data back into a list of strings
+      val result = groupedData.values.flatten.map(_.mkString(",")).toList
 
-      result
+      // Combine the header with the filtered rows
+      val outputCsv = (lines.head :: result).mkString("\n")
+
+      Some(outputCsv)
     } else {
-      Map.empty
+      None
     }
   }
 
