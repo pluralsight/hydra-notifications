@@ -1,6 +1,6 @@
 package hydra.notifications.converters
 
-object CsvToHtmlConverter {
+object CsvConverter extends Converter {
 
   def isCsv(input: String, delimiter: Char = ','): Boolean = {
     // Split the input into lines
@@ -50,14 +50,40 @@ object CsvToHtmlConverter {
     }
 
     // Wrap the rows in <table> tags
-    val htmlString = s"""
-                        |<table class="table table-bordered table-hover table-condensed">
-                        |  <thead>$headerHtml</thead>
-                        |  <tbody>$dataHtml</tbody>
-                        |</table>
+    val htmlString =
+      s"""
+         |<table class="table table-bordered table-hover table-condensed">
+         |  <thead>$headerHtml</thead>
+         |  <tbody>$dataHtml</tbody>
+         |</table>
      """.stripMargin.trim
 
     htmlString.replaceAll("\\n\\s*", "")
+  }
+
+  def splitTopicWise(csvString: String): Map[String, String] = {
+    val lines = csvString.split("\n").toList
+    val headers = lines.head.split(",").map(_.trim)
+    val dataRows = lines.tail
+
+    // Find the index of the "topics" column (case-insensitive)
+    val topicsIndex = headers.indexWhere(_.equalsIgnoreCase("topics"))
+
+    if (topicsIndex >= 0) {
+      // Group the data rows by the "topics" column
+      val groupedData: Map[String, List[List[String]]] = dataRows.map(_.split(",").toList).groupBy(_(topicsIndex))
+
+      // Generate the Map[String, String] where the key is the topic and the value is the CSV string
+      val result: Map[String, String] = groupedData.map {
+        case (topic, rows) =>
+          val csvRows = rows.map(_.mkString(",")).mkString("\n")
+          topic -> (headers.mkString(",") + "\n" + csvRows)
+      }
+
+      result
+    } else {
+      Map.empty
+    }
   }
 
   private def isNumeric(value: String): Boolean = value.matches("""^-?\d+(\.\d+)?$""")

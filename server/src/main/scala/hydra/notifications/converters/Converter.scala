@@ -1,5 +1,7 @@
 package hydra.notifications.converters
 
+trait Converter
+
 object Converter {
 
   def escape(value: String): String = {

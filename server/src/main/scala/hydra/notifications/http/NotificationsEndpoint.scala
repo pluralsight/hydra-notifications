@@ -28,7 +28,7 @@ import hydra.notifications.client.{HydraNotification, NotificationsResponse, Ops
 import hydra.notifications.services.NotificationsSupervisor.{GetServiceList, SendNotification, ServiceList, ServiceNotFound}
 import spray.json.DefaultJsonProtocol
 import hydra.notifications.PayloadJsonProtocol._
-import hydra.notifications.converters.{Converter, CsvToHtmlConverter}
+import hydra.notifications.converters.{Converter, CsvConverter}
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.duration._
@@ -106,15 +106,21 @@ class NotificationsEndpoint(notificationsSupervisor: ActorRef)
       case MessageString(value) => (value, None, None)
       case MessageJson(notification) =>
         val (csvProperties, properties) = notification.properties.partition { case (_, value) =>
-          CsvToHtmlConverter.isCsv(Converter.unescape(value))
+          CsvConverter.isCsv(Converter.unescape(value))
         }
 
-        val htmlProperties = csvProperties.mapValues(v => CsvToHtmlConverter.convertToHtml(Converter.unescape(v)))
-        val filterKeys = htmlProperties.keySet ++ Set("description")
+        val descriptionKey = "description"
+        // Extract topic-wise csv Map from description
+        val topicWiseDescriptionProperties = csvProperties.get(descriptionKey).map(CsvConverter.splitTopicWise).getOrElse(Map.empty)
+        val allCsvProperties = csvProperties.filterKeys(!_.equals(descriptionKey)) ++ topicWiseDescriptionProperties
+        val htmlProperties = allCsvProperties mapValues { v =>
+          CsvConverter.convertToHtml(Converter.unescape(v))
+        }
+        val filterKeys = htmlProperties.keySet ++ Set(descriptionKey)
 
         (
           notification.message,
-          notification.properties.get("description").map(Converter.unescape),
+          notification.properties.get(descriptionKey).map(Converter.unescape),
           Option(properties.filterKeys(filterKeys.containsNot) ++ htmlProperties)
         )
     }
